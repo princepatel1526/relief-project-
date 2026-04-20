@@ -160,15 +160,15 @@
         </div>
         <div class="role-item">
           <div class="role-dot"></div>
-          <span><strong style="color:#c8c5be">NGO</strong> — Partner organisation coordinator</span>
+          <span><strong style="color:#c8c5be">NGO Coordinator</strong> — Partner organisation coordinator</span>
         </div>
         <div class="role-item">
           <div class="role-dot"></div>
-          <span><strong style="color:#c8c5be">Coordinator</strong> — Manage operations &amp; teams</span>
+          <span><strong style="color:#c8c5be">Admin</strong> — Manage operations &amp; teams</span>
         </div>
         <div class="role-item">
           <div class="role-dot"></div>
-          <span><strong style="color:#c8c5be">Donor</strong> — Contribute resources</span>
+          <span><strong style="color:#c8c5be">Super Admin</strong> — Global platform administration</span>
         </div>
       </div>
     </div>
@@ -229,9 +229,9 @@
             <option value="CITIZEN">Citizen — Report incidents & request help</option>
             <option value="VOLUNTEER">Volunteer — Field relief worker</option>
             <option value="RESPONDER">Responder — Professional first responder</option>
-            <option value="NGO">NGO Coordinator — Partner organisation</option>
-            <option value="COORDINATOR">Coordinator — Manage operations</option>
-            <option value="DONOR">Donor — Contribute resources</option>
+            <option value="NGO_COORDINATOR">NGO Coordinator — Partner organisation</option>
+            <option value="ADMIN">Admin — Manage operations</option>
+            <option value="SUPER_ADMIN">Super Admin — Global administration</option>
           </select>
           <div class="role-hint" id="role-hint">Volunteers assist directly in field operations and disaster zones.</div>
         </div>
@@ -252,9 +252,9 @@
       CITIZEN:     'Citizens can report incidents, request help, and track response progress.',
       VOLUNTEER:   'Volunteers assist directly in field operations and disaster zones.',
       RESPONDER:   'Professional first responders with specialised emergency training.',
-      NGO:         'NGO coordinators manage partner organisation relief operations.',
-      COORDINATOR: 'Coordinators manage teams, assignments, and operational workflows.',
-      DONOR:       'Donors contribute financial or material resources to relief efforts.',
+      NGO_COORDINATOR: 'NGO coordinators manage partner organisation relief operations.',
+      ADMIN:       'Admins manage teams, assignments, and operational workflows.',
+      SUPER_ADMIN: 'Super admins manage global platform policies and access.',
     };
     document.getElementById('role-select').addEventListener('change', function() {
       document.getElementById('role-hint').textContent = hints[this.value] || '';

@@ -25,7 +25,7 @@ public class VolunteerController {
     private final VolunteerServiceImpl volunteerService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<Page<VolunteerResponse>> getAllVolunteers(
             @RequestParam(required = false) Volunteer.Availability availability,
             @PageableDefault(size = 10) Pageable pageable) {
@@ -33,7 +33,7 @@ public class VolunteerController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<VolunteerResponse> getVolunteer(@PathVariable Long id) {
         return ResponseEntity.ok(volunteerService.getVolunteerById(id));
     }
@@ -57,7 +57,7 @@ public class VolunteerController {
     }
 
     @GetMapping("/nearby")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<List<VolunteerResponse>> getNearbyVolunteers(
             @RequestParam double lat,
             @RequestParam double lng,

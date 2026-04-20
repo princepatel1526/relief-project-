@@ -96,7 +96,7 @@ public class AssignmentServiceImpl {
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment", "id", id));
         User currentUser = currentUser();
         boolean privileged = hasAnyRole(currentUser, Role.RoleName.ROLE_ADMIN, Role.RoleName.ROLE_SUPER_ADMIN,
-                Role.RoleName.ROLE_COORDINATOR, Role.RoleName.ROLE_NGO_COORDINATOR);
+                Role.RoleName.ROLE_NGO_COORDINATOR);
         if (!privileged && (assignment.getVolunteer() == null
                 || assignment.getVolunteer().getUser() == null
                 || !assignment.getVolunteer().getUser().getId().equals(currentUser.getId()))) {

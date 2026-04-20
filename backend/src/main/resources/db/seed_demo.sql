@@ -8,14 +8,16 @@ SET @now = NOW();
 -- ROLES (idempotent)
 -- =============================================
 INSERT IGNORE INTO roles (name, description) VALUES
-('ROLE_ADMIN', 'System administrator with full access'),
-('ROLE_COORDINATOR', 'Disaster coordinator managing operations'),
+('ROLE_CITIZEN', 'Citizen reporting incidents and requesting support'),
 ('ROLE_VOLUNTEER', 'Field volunteer providing relief'),
-('ROLE_DONOR', 'Donor contributing resources');
+('ROLE_RESPONDER', 'Professional first responder'),
+('ROLE_NGO_COORDINATOR', 'NGO coordinator managing partner operations'),
+('ROLE_ADMIN', 'System administrator with operational access'),
+('ROLE_SUPER_ADMIN', 'Super administrator with full cross-region access');
 
 -- =============================================
 -- USERS (password for all: password123)
--- Includes admins, responders (as coordinators), volunteers, donors, citizens.
+-- Includes admins, NGO coordinators, volunteers, and citizens.
 -- =============================================
 INSERT INTO users (username, email, password, full_name, phone, is_active, created_at)
 SELECT 'admin', 'admin@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'System Admin', '9000000001', TRUE, DATE_SUB(@now, INTERVAL 58 DAY)
@@ -70,13 +72,13 @@ INSERT IGNORE INTO user_roles (user_id, role_id)
 SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_ADMIN' WHERE u.username = 'admin';
 
 INSERT IGNORE INTO user_roles (user_id, role_id)
-SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_COORDINATOR' WHERE u.username IN ('ops_lead_mumbai', 'ops_lead_chennai');
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_NGO_COORDINATOR' WHERE u.username IN ('ops_lead_mumbai', 'ops_lead_chennai');
 
 INSERT IGNORE INTO user_roles (user_id, role_id)
 SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_VOLUNTEER' WHERE u.username IN ('volunteer_mum_01', 'volunteer_mum_02', 'volunteer_che_01', 'volunteer_asm_01');
 
 INSERT IGNORE INTO user_roles (user_id, role_id)
-SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_DONOR' WHERE u.username IN ('donor_corp_01', 'donor_ind_01');
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_CITIZEN' WHERE u.username IN ('donor_corp_01', 'donor_ind_01', 'citizen_mumbai_01', 'citizen_chennai_01', 'citizen_kolkata_01');
 
 -- =============================================
 -- DISASTER TYPES

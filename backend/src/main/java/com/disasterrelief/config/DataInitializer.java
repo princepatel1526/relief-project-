@@ -7,11 +7,13 @@ import com.disasterrelief.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -29,25 +31,40 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedRoles() {
-        Map<Role.RoleName, String> roles = Map.of(
-            Role.RoleName.ROLE_ADMIN,         "System administrator with full access",
-            Role.RoleName.ROLE_SUPER_ADMIN,   "Super administrator with cross-region access",
-            Role.RoleName.ROLE_COORDINATOR,   "Disaster coordinator managing operations",
-            Role.RoleName.ROLE_VOLUNTEER,     "Field volunteer providing relief",
-            Role.RoleName.ROLE_DONOR,         "Donor contributing resources",
-            Role.RoleName.ROLE_CITIZEN,       "Citizen reporting incidents and needs",
-            Role.RoleName.ROLE_RESPONDER,     "Professional first responder",
-            Role.RoleName.ROLE_NGO,           "NGO partner user",
-            Role.RoleName.ROLE_NGO_COORDINATOR, "NGO coordinator managing partner operations"
+        Map<Role.RoleName, String> standardRoles = Map.of(
+            Role.RoleName.ROLE_CITIZEN,         "Citizen reporting incidents and requesting support",
+            Role.RoleName.ROLE_VOLUNTEER,       "Field volunteer providing relief",
+            Role.RoleName.ROLE_RESPONDER,       "Professional first responder",
+            Role.RoleName.ROLE_NGO_COORDINATOR, "NGO coordinator managing partner operations",
+            Role.RoleName.ROLE_ADMIN,           "System administrator with operational access",
+            Role.RoleName.ROLE_SUPER_ADMIN,     "Super administrator with full cross-region access"
         );
 
-        roles.forEach((name, desc) -> {
-            if (roleRepository.findByName(name).isEmpty()) {
-                Role role = new Role();
-                role.setName(name);
+        Set<String> legacyRoles = Set.of("ROLE_COORDINATOR", "ROLE_DONOR", "ROLE_NGO");
+
+        try {
+            roleRepository.findAll().forEach(role -> {
+                if (legacyRoles.contains(role.getName().name())) {
+                    roleRepository.delete(role);
+                    log.info("Removed legacy role: {}", role.getName());
+                }
+            });
+        } catch (Exception ex) {
+            log.warn("Skipping legacy role cleanup due to role mapping mismatch: {}", ex.getMessage());
+        }
+
+        standardRoles.forEach((name, desc) -> {
+            try {
+                Role role = roleRepository.findByName(name).orElseGet(() -> {
+                    Role r = new Role();
+                    r.setName(name);
+                    return r;
+                });
                 role.setDescription(desc);
                 roleRepository.save(role);
-                log.info("Seeded role: {}", name);
+            } catch (DataAccessException ex) {
+                // Never crash startup because of a seed mismatch; log and continue.
+                log.warn("Skipping role seed for {} due to DB constraint mismatch: {}", name, ex.getMostSpecificCause().getMessage());
             }
         });
     }

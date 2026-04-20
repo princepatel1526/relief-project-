@@ -209,12 +209,12 @@
       });
     }
 
-    // Donors cannot add or change disasters — hide write controls
-    if (hasRole('DONOR')) {
+    // Citizens cannot add or change disasters — hide write controls
+    if (hasRole('CITIZEN')) {
       document.querySelector('[onclick="openCreateModal()"]')?.remove();
       // Action buttons in each row will also be hidden by the row renderer check below
     }
-    const canWrite = !hasRole('DONOR');
+    const canWrite = !hasRole('CITIZEN');
 
     let currentPage = 0;
 

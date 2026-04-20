@@ -24,13 +24,13 @@ public class AssignmentController {
     private final AssignmentServiceImpl assignmentService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<AssignmentResponse> createAssignment(@Valid @RequestBody AssignmentRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(assignmentService.createAssignment(request));
     }
 
     @GetMapping("/disaster/{disasterId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<Page<AssignmentResponse>> getByDisaster(
             @PathVariable Long disasterId,
             @PageableDefault(size = 20) Pageable pageable) {

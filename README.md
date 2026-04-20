@@ -63,6 +63,7 @@ Stop everything with `Ctrl+C` (graceful shutdown) or:
 ```sql
 -- Run schema and seed
 mysql -u root -p < backend/src/main/resources/db/schema.sql
+mysql -u root -p disaster_relief_db < backend/src/main/resources/db/migration/V20260420_01__roles_name_to_varchar_and_standardize.sql
 mysql -u root -p disaster_relief_db < backend/src/main/resources/db/seed.sql
 ```
 
@@ -106,7 +107,7 @@ Open `frontend/index.html` via VS Code Live Server or any static file server.
 | Role        | Username      | Password      |
 |-------------|---------------|---------------|
 | Admin       | `admin`       | `password123` |
-| Coordinator | `coordinator1`| `password123` |
+| NGO Coordinator | `ngo_coord1`| `password123` |
 | Volunteer   | `volunteer1`  | `password123` |
 
 ---
@@ -122,7 +123,7 @@ POST /api/auth/register     — Register
 ### Disasters
 ```
 GET    /api/disasters              — List (filterable by status, severity, paginated)
-POST   /api/disasters              — Create (Admin/Coordinator)
+POST   /api/disasters              — Create (Admin/NGO Coordinator/Super Admin)
 PUT    /api/disasters/{id}         — Update
 PATCH  /api/disasters/{id}/status  — Update status
 GET    /api/disasters/nearby       — Geo-query (?lat=&lng=&radiusKm=)
@@ -153,7 +154,7 @@ PATCH  /api/inventory/{id}/quantity — Update quantity (ADD/SUBTRACT/SET)
 
 ### Assignments
 ```
-POST   /api/assignments               — Create (Admin/Coordinator)
+POST   /api/assignments               — Create (Admin/NGO Coordinator/Super Admin)
 GET    /api/assignments/disaster/{id} — By disaster
 PATCH  /api/assignments/{id}/status   — Update status
 ```

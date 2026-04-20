@@ -176,11 +176,11 @@
     requireAuth();
     renderUserInfo();
 
-    // Donors cannot add or modify inventory — hide write controls
-    if (hasRole('DONOR')) {
+    // Citizens cannot add or modify inventory — hide write controls
+    if (hasRole('CITIZEN')) {
       document.querySelector('[onclick="openAddModal()"]')?.remove();
     }
-    const canWrite = !hasRole('DONOR');
+    const canWrite = !hasRole('CITIZEN');
 
     let currentPage = 0;
     let editingId = null;
