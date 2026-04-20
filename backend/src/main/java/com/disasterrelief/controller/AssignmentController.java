@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/assignments")
+@RequestMapping("/api/assignments")
 @RequiredArgsConstructor
 public class AssignmentController {
 

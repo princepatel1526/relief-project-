@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/disasters")
+@RequestMapping("/api/disasters")
 @RequiredArgsConstructor
 public class DisasterController {
 

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/inventory")
+@RequestMapping("/api/inventory")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
 public class InventoryController {
@@ -40,9 +40,7 @@ public class InventoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<InventoryResponse> getItem(@PathVariable Long id) {
-        return ResponseEntity.ok(inventoryService.getAllInventory(null, null,
-                org.springframework.data.domain.PageRequest.of(0, 1))
-                .getContent().stream().filter(i -> i.getId().equals(id)).findFirst().orElseThrow());
+        return ResponseEntity.ok(inventoryService.getItemById(id));
     }
 
     @PostMapping
