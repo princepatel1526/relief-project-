@@ -13,6 +13,7 @@ import java.util.List;
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
     Page<Assignment> findByVolunteerId(Long volunteerId, Pageable pageable);
+    Page<Assignment> findByVolunteerUserId(Long userId, Pageable pageable);
 
     Page<Assignment> findByDisasterId(Long disasterId, Pageable pageable);
 

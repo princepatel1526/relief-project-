@@ -10,7 +10,7 @@ USE disaster_relief_db;
 -- =============================================
 CREATE TABLE IF NOT EXISTS roles (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name        ENUM('ROLE_ADMIN','ROLE_COORDINATOR','ROLE_VOLUNTEER','ROLE_DONOR') NOT NULL UNIQUE,
+    name        VARCHAR(80) NOT NULL UNIQUE,
     description VARCHAR(255),
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

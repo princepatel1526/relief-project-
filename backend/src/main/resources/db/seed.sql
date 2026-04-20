@@ -4,28 +4,30 @@ USE disaster_relief_db;
 -- SEED ROLES
 -- =============================================
 INSERT IGNORE INTO roles (name, description) VALUES
-('ROLE_ADMIN', 'System administrator with full access'),
-('ROLE_COORDINATOR', 'Disaster coordinator managing operations'),
+('ROLE_CITIZEN', 'Citizen reporting incidents and requesting support'),
 ('ROLE_VOLUNTEER', 'Field volunteer providing relief'),
-('ROLE_DONOR', 'Donor contributing resources');
+('ROLE_RESPONDER', 'Professional first responder'),
+('ROLE_NGO_COORDINATOR', 'NGO coordinator managing partner operations'),
+('ROLE_ADMIN', 'System administrator with operational access'),
+('ROLE_SUPER_ADMIN', 'Super administrator with full cross-region access');
 
 -- =============================================
 -- SEED USERS (password = "password123" BCrypt encoded)
 -- =============================================
 INSERT IGNORE INTO users (username, email, password, full_name, phone, is_active) VALUES
 ('admin',       'admin@disasterrelief.org',      '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'System Admin',        '9000000001', TRUE),
-('coordinator1','coordinator@disasterrelief.org','$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Rahul Coordinator',   '9000000002', TRUE),
+('ngo_coord1',  'ngo.coord@disasterrelief.org',  '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Rahul NGO Coordinator','9000000002', TRUE),
 ('volunteer1',  'volunteer1@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Priya Sharma',        '9000000003', TRUE),
 ('volunteer2',  'volunteer2@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Amit Kumar',          '9000000004', TRUE),
-('donor1',      'donor1@example.com',            '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Sneha Donor',         '9000000005', TRUE);
+('citizen1',    'citizen1@example.com',          '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Sneha Citizen',       '9000000005', TRUE);
 
 -- Assign roles
 INSERT IGNORE INTO user_roles (user_id, role_id) VALUES
-(1, 1), -- admin -> ROLE_ADMIN
-(2, 2), -- coordinator -> ROLE_COORDINATOR
-(3, 3), -- volunteer1 -> ROLE_VOLUNTEER
-(4, 3), -- volunteer2 -> ROLE_VOLUNTEER
-(5, 4); -- donor -> ROLE_DONOR
+(1, (SELECT id FROM roles WHERE name = 'ROLE_ADMIN')), -- admin
+(2, (SELECT id FROM roles WHERE name = 'ROLE_NGO_COORDINATOR')), -- ngo coordinator
+(3, (SELECT id FROM roles WHERE name = 'ROLE_VOLUNTEER')), -- volunteer1
+(4, (SELECT id FROM roles WHERE name = 'ROLE_VOLUNTEER')), -- volunteer2
+(5, (SELECT id FROM roles WHERE name = 'ROLE_CITIZEN')); -- citizen
 
 -- =============================================
 -- SEED DISASTER TYPES
