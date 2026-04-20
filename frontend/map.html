@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Map | Disaster Relief Platform</title>
   <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/sp38=" crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     .map-layout {
       display: grid;
@@ -27,6 +24,28 @@
       border: 1px solid var(--border);
       z-index: 1;
     }
+    .map-canvas-wrap {
+      position: relative;
+      min-height: 400px;
+      height: 100%;
+    }
+    .map-state {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+    .map-state.visible { display: flex; }
     .map-sidebar {
       display: flex;
       flex-direction: column;
@@ -95,40 +114,40 @@
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon">🚨</div>
+      <div class="logo-icon"><i data-lucide="shield-alert"></i></div>
       <div><h1>Relief Platform</h1><span>Emergency Coordination</span></div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-section-label">Overview</div>
-        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
-        <a href="analytics.html" class="nav-link"><span class="icon">📈</span> Analytics</a>
-        <a href="map.html" class="nav-link active"><span class="icon">🗺️</span> Live Map</a>
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+        <a href="analytics.html" class="nav-link"><span class="icon"><i data-lucide="line-chart"></i></span> Analytics</a>
+        <a href="map.html" class="nav-link active"><span class="icon"><i data-lucide="map"></i></span> Live Map</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Operations</div>
-        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
-        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
-        <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+        <a href="disasters.html" class="nav-link"><span class="icon"><i data-lucide="cloud-lightning"></i></span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon"><i data-lucide="siren"></i></span> Relief Requests</a>
+        <a href="assignments.html" class="nav-link"><span class="icon"><i data-lucide="users"></i></span> Assignments</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Resources</div>
-        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
-        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
-        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+        <a href="inventory.html" class="nav-link"><span class="icon"><i data-lucide="package"></i></span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon"><i data-lucide="user-check"></i></span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon"><i data-lucide="hand-coins"></i></span> Donations</a>
       </div>
     </nav>
     <div class="sidebar-footer">
-      <button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button>
+      <button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;"><i data-lucide="log-out"></i> Logout</button>
     </div>
   </aside>
 
   <div class="main-content">
     <header class="topbar">
-      <h2 class="topbar-title">🗺️ Live Incident Map</h2>
+      <h2 class="topbar-title"><i data-lucide="map"></i> Live Incident Map</h2>
       <div class="topbar-actions">
-        <button class="btn btn-outline btn-sm" onclick="refreshMap()">🔄 Refresh</button>
-        <button class="btn btn-outline btn-sm" onclick="locateMe()">📍 My Location</button>
+        <button class="btn btn-outline btn-sm" onclick="refreshMap()"><i data-lucide="refresh-cw"></i> Refresh</button>
+        <button class="btn btn-outline btn-sm" onclick="locateMe()"><i data-lucide="locate-fixed"></i> My Location</button>
         <div class="user-menu">
           <div class="user-avatar" id="user-avatar">A</div>
           <div><div class="user-name" id="user-name">Loading…</div><div class="user-role" id="user-role"></div></div>
@@ -181,7 +200,10 @@
         </div>
 
         <!-- Right: Map -->
-        <div id="leaflet-map"></div>
+        <div class="map-canvas-wrap">
+          <div id="leaflet-map"></div>
+          <div class="map-state visible" id="map-state">Loading map…</div>
+        </div>
       </div>
     </main>
   </div>
@@ -191,20 +213,27 @@
 <script type="module">
   import api from './js/api.js';
   import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
-  import { showToast, severityBadge } from './js/utils.js';
+  import { showToast } from './js/utils.js';
   import './js/profile.js';
 
   window.logout = authLogout;
   requireAuth();
   renderUserInfo();
 
-  // ── Map init ────────────────────────────────────────────────────────────
-  const map = L.map('leaflet-map').setView([20.5937, 78.9629], 5); // India centre
+  const INDIA_CENTER = [20.5937, 78.9629];
+  const INDIA_ZOOM = 5;
+  const LEAFLET_SCRIPT_CANDIDATES = [
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'
+  ];
+  let map = null;
+  let mapReady = false;
+  const mapStateEl = document.getElementById('map-state');
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19,
-  }).addTo(map);
+  function setMapState(message = '', visible = false) {
+    mapStateEl.textContent = message;
+    mapStateEl.classList.toggle('visible', visible);
+  }
 
   const SEVERITY_CONFIG = {
     CRITICAL: { color: '#a8281a', radius: 14, fillOpacity: 0.85 },
@@ -217,6 +246,21 @@
   let markers      = [];
   let currentFilter = 'ALL';
 
+  function formatIncidentTimestamp(value) {
+    if (!value) return 'N/A';
+    try {
+      return new Date(value).toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return 'N/A';
+    }
+  }
+
   function clearMarkers() {
     markers.forEach(m => m.remove());
     markers = [];
@@ -224,8 +268,9 @@
 
   function renderMarkers(disasters) {
     clearMarkers();
+    let plottedCount = 0;
     disasters.forEach(d => {
-      if (!d.latitude || !d.longitude) return;
+      if (d.latitude == null || d.longitude == null) return;
       const cfg = SEVERITY_CONFIG[d.severity] || SEVERITY_CONFIG.MEDIUM;
       const circle = L.circleMarker([d.latitude, d.longitude], {
         radius: cfg.radius,
@@ -244,9 +289,10 @@
             <span style="background:#f0ede8;color:#4a4845;padding:2px 7px;border-radius:20px;font-size:11px;">${d.status}</span>
           </div>
           <div style="font-size:12px;color:#6c6a64;margin-top:4px;">
-            📍 ${d.locationName || 'Location unavailable'}<br>
-            👥 ${(d.affectedPeople || 0).toLocaleString()} affected<br>
-            🏷️ ${d.disasterType?.name || d.type || ''}
+            Location: ${d.locationName || 'Unavailable'}<br>
+            Affected: ${(d.affectedPeople || 0).toLocaleString()}<br>
+            Type: ${d.disasterType?.name || d.type || 'N/A'}<br>
+            Updated: ${formatIncidentTimestamp(d.updatedAt || d.createdAt || d.startDate)}
           </div>
           <a href="disasters.html" style="display:block;margin-top:8px;font-size:11.5px;color:#1a4080;text-decoration:none;font-weight:600;">
             View details →
@@ -255,7 +301,15 @@
       `);
 
       markers.push(circle);
+      plottedCount += 1;
     });
+
+    if (mapReady && plottedCount > 0) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.2));
+    } else if (mapReady) {
+      map.setView(INDIA_CENTER, INDIA_ZOOM);
+    }
   }
 
   function renderList(disasters) {
@@ -267,12 +321,12 @@
     }
     el.innerHTML = disasters.map(d => {
       const cfg = SEVERITY_CONFIG[d.severity] || SEVERITY_CONFIG.MEDIUM;
-      return `<div class="incident-item" onclick="flyTo(${d.latitude},${d.longitude})">
+      return `<div class="incident-item" onclick="flyTo(${d.latitude ?? 'null'},${d.longitude ?? 'null'})">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">
           <h4 style="margin:0">${d.title}</h4>
           <span style="background:${cfg.color};color:#fff;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:700;flex-shrink:0;">${d.severity}</span>
         </div>
-        <p>📍 ${d.locationName || '—'} &nbsp;·&nbsp; 👥 ${(d.affectedPeople||0).toLocaleString()}</p>
+        <p>${d.locationName || 'Location unavailable'} &nbsp;·&nbsp; ${ (d.affectedPeople||0).toLocaleString() } affected</p>
       </div>`;
     }).join('');
   }
@@ -293,15 +347,20 @@
   };
 
   window.flyTo = function(lat, lng) {
-    if (lat && lng) map.flyTo([lat, lng], 10, { duration: 1.2 });
+    if (lat == null || lng == null || !mapReady) {
+      showToast('Coordinates unavailable for this incident', 'warning');
+      return;
+    }
+    map.flyTo([lat, lng], 10, { duration: 1.2 });
   };
 
   window.locateMe = function() {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(pos => {
+        if (!mapReady) return;
         map.flyTo([pos.coords.latitude, pos.coords.longitude], 10);
         L.marker([pos.coords.latitude, pos.coords.longitude])
-          .bindPopup('<b>📍 Your Location</b>').addTo(map).openPopup();
+          .bindPopup('<b>Your Location</b>').addTo(map).openPopup();
       }, () => showToast('Location access denied', 'error'));
     } else {
       showToast('Geolocation not supported', 'error');
@@ -312,6 +371,7 @@
 
   async function loadMap() {
     try {
+      setMapState('Loading incidents…', true);
       const res = await api.map.all();
       allDisasters = res.content || [];
 
@@ -324,15 +384,78 @@
         ? (totalPeople / 1000).toFixed(1) + 'k' : totalPeople;
 
       applyFilter();
+      const hasCoordinates = allDisasters.some(d => d.latitude != null && d.longitude != null);
+      setMapState(
+        hasCoordinates
+          ? ''
+          : 'No mappable coordinates found yet. The map is ready—new reports with latitude/longitude will appear here.',
+        !hasCoordinates
+      );
     } catch (err) {
       showToast('Failed to load map data: ' + err.message, 'error');
       document.getElementById('incident-list').innerHTML =
         '<p style="padding:16px;color:var(--danger);font-size:13px;">Failed to load incidents.</p>';
+      setMapState('Unable to load incident data. Please retry.', true);
     }
   }
 
-  loadMap();
-  setInterval(loadMap, 30000); // refresh every 30s
+  function loadLeafletScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ensureLeafletLoaded() {
+    if (window.L) return true;
+
+    for (const src of LEAFLET_SCRIPT_CANDIDATES) {
+      try {
+        setMapState('Loading map engine…', true);
+        await loadLeafletScript(src);
+        if (window.L) return true;
+      } catch (_) {
+        // try next CDN
+      }
+    }
+    return !!window.L;
+  }
+
+  async function initMap() {
+    const leafletReady = await ensureLeafletLoaded();
+    if (!leafletReady) {
+      setMapState('Map library failed to load. Check internet access and retry.', true);
+      document.getElementById('incident-list').innerHTML =
+        '<p style="padding:16px;color:var(--danger);font-size:13px;">Map engine unavailable.</p>';
+      return false;
+    }
+
+    map = L.map('leaflet-map', { zoomControl: true }).setView(INDIA_CENTER, INDIA_ZOOM);
+    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map);
+
+    tiles.on('tileerror', () => {
+      showToast('Map tiles failed to load. Check network connectivity.', 'error');
+    });
+
+    map.whenReady(() => {
+      mapReady = true;
+      setTimeout(() => map.invalidateSize(), 50);
+    });
+    return true;
+  }
+
+  const mapBooted = await initMap();
+  if (mapBooted) {
+    loadMap();
+    setInterval(loadMap, 30000); // refresh every 30s
+  }
 </script>
 </body>
 </html>

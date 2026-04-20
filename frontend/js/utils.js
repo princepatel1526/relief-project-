@@ -22,6 +22,27 @@ export function formatCurrency(amount) {
   return '₹' + Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 }
 
+export function formatCurrencyCompactIndian(amount) {
+  if (amount == null || Number.isNaN(Number(amount))) return '-';
+  const value = Number(amount);
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+
+  if (abs >= 10000000) { // Crore
+    const crore = abs / 10000000;
+    const digits = crore >= 100 ? 0 : crore >= 10 ? 1 : 2;
+    return `${sign}₹${Number(crore.toFixed(digits)).toLocaleString('en-IN')}Cr`;
+  }
+
+  if (abs >= 100000) { // Lakh
+    const lakh = abs / 100000;
+    const digits = lakh >= 100 ? 0 : lakh >= 10 ? 1 : 2;
+    return `${sign}₹${Number(lakh.toFixed(digits)).toLocaleString('en-IN')}L`;
+  }
+
+  return `${sign}₹${abs.toLocaleString('en-IN')}`;
+}
+
 export function severityBadge(severity) {
   const map = {
     CRITICAL: 'badge-critical', HIGH: 'badge-high',

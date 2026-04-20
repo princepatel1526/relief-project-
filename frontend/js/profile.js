@@ -1,13 +1,86 @@
 /**
  * profile.js — Self-injecting profile module.
  * Import this module from any dashboard page; it will:
- *  1. Inject a 👤 profile button next to the notification bell in the topbar.
+ *  1. Inject a profile button next to the notification bell in the topbar.
  *  2. Inject a profile modal with "Edit Profile" and "Change Password" tabs.
  *  3. Wire up all API calls and show inline success/error messages.
  */
 
 import api from './api.js';
 import { getUser, saveSession } from './auth.js';
+
+const LUCIDE_CANDIDATES = [
+  'https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js',
+  'https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js'
+];
+
+async function ensureLucide() {
+  if (window.lucide) return true;
+
+  const tryLoad = (src) => new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+
+  for (const src of LUCIDE_CANDIDATES) {
+    try {
+      await tryLoad(src);
+      if (window.lucide) return true;
+    } catch (_) {
+      // try next source
+    }
+  }
+  return false;
+}
+
+async function renderIcons() {
+  const ok = await ensureLucide();
+  if (!ok) return;
+
+  const iconMap = {
+    '🚨': 'shield-alert',
+    '📊': 'layout-dashboard',
+    '📈': 'line-chart',
+    '🗺️': 'map',
+    '📝': 'file-pen-line',
+    '🌪️': 'cloud-lightning',
+    '🆘': 'siren',
+    '👥': 'users',
+    '📦': 'package',
+    '🙋': 'user-check',
+    '💰': 'hand-coins',
+    '🚪': 'log-out',
+    '🔄': 'refresh-cw',
+    '🔔': 'bell',
+    '✅': 'check-circle-2',
+    '🌤️': 'sun',
+    '📍': 'locate-fixed',
+    '⚠️': 'triangle-alert',
+    '📋': 'list-checks'
+  };
+
+  const iconEmojiNodes = document.querySelectorAll('.icon, .logo-icon, .stat-icon, .empty-state .icon, .impact-icon, .success-icon');
+  iconEmojiNodes.forEach(el => {
+    const text = el.textContent.trim();
+    if (iconMap[text]) el.innerHTML = `<i data-lucide="${iconMap[text]}"></i>`;
+  });
+
+  const stripIn = document.querySelectorAll('.topbar-title, .card-header h3, .mini-chart-card h4, .btn, .btn-icon, .map-hint');
+  const emojiPattern = /\p{Extended_Pictographic}\uFE0F?/gu;
+  stripIn.forEach(el => {
+    el.childNodes.forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.textContent = node.textContent.replace(emojiPattern, '').replace(/\s{2,}/g, ' ').trimStart();
+      }
+    });
+  });
+
+  window.lucide.createIcons();
+}
 
 // ── Inject styles ─────────────────────────────────────────────────────────────
 const style = document.createElement('style');
@@ -97,7 +170,7 @@ overlay.className = 'profile-overlay';
 overlay.innerHTML = `
   <div class="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
     <div class="profile-modal-header">
-      <h3 id="profile-title">👤 My Profile</h3>
+      <h3 id="profile-title">My Profile</h3>
       <button class="profile-modal-close" id="profile-close" aria-label="Close">✕</button>
     </div>
 
@@ -163,7 +236,7 @@ function injectProfileButton() {
   const profileBtn = document.createElement('button');
   profileBtn.className = 'profile-btn';
   profileBtn.id = 'profile-open-btn';
-  profileBtn.innerHTML = '👤 <span id="profile-btn-name">Profile</span>';
+  profileBtn.innerHTML = '<i data-lucide="user-circle-2"></i><span id="profile-btn-name">Profile</span>';
   profileBtn.title = 'Edit Profile';
 
   // Insert before .user-menu
@@ -259,7 +332,7 @@ document.getElementById('edit-save').addEventListener('click', async () => {
     const profileBtnName = document.getElementById('profile-btn-name');
     if (profileBtnName) profileBtnName.textContent = updated.fullName?.split(' ')[0] || 'Profile';
 
-    showAlert(alert, 'success', '✅ Profile updated successfully!');
+    showAlert(alert, 'success', 'Profile updated successfully.');
   } catch (err) {
     showAlert(alert, 'error', err.message || 'Failed to update profile.');
   } finally {
@@ -304,7 +377,7 @@ document.getElementById('pw-save').addEventListener('click', async () => {
     document.getElementById('pw-new').value     = '';
     document.getElementById('pw-confirm').value = '';
 
-    showAlert(alert, 'success', '✅ Password changed! Please use the new password next time you log in.');
+    showAlert(alert, 'success', 'Password changed. Please use the new password next time you log in.');
   } catch (err) {
     showAlert(alert, 'error', err.message || 'Failed to change password.');
   } finally {
@@ -329,7 +402,11 @@ function clearAlerts() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 // Wait for DOM then inject the button (this module may load before body is ready)
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', injectProfileButton);
+  document.addEventListener('DOMContentLoaded', async () => {
+    injectProfileButton();
+    await renderIcons();
+  });
 } else {
   injectProfileButton();
+  renderIcons();
 }
