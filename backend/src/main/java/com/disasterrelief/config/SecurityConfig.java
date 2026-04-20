@@ -53,27 +53,34 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // ── Public API endpoints ──────────────────────────────────────
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()  // covers login, register, forgot-username, reset-password
                 .requestMatchers("/api/payments/webhook").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/disasters/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/disaster-types/**").permitAll()
                 .requestMatchers("/api/actuator/health", "/actuator/health").permitAll()
+
+                // ── Current-user profile (any authenticated role) ─────────────
+                .requestMatchers("/api/users/me", "/api/users/me/**").authenticated()
 
                 // ── Role-protected API endpoints ──────────────────────────────
                 .requestMatchers("/api/users", "/api/users/**")
                     .hasAnyRole("ADMIN", "COORDINATOR")
                 .requestMatchers("/api/admin/**")
                     .hasAnyRole("ADMIN", "COORDINATOR")
+                // Volunteers, Coordinators, Admins can report/update disasters — Donors cannot
                 .requestMatchers(HttpMethod.POST,   "/api/disasters/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
                 .requestMatchers(HttpMethod.PUT,    "/api/disasters/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
+                .requestMatchers(HttpMethod.PATCH,  "/api/disasters/**")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
                 .requestMatchers(HttpMethod.DELETE, "/api/disasters/**")
                     .hasRole("ADMIN")
                 .requestMatchers("/api/assignments/**")
                     .hasAnyRole("ADMIN", "COORDINATOR")
+                // Volunteers, Coordinators, Admins can manage inventory — Donors cannot
                 .requestMatchers("/api/inventory/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
 
                 // ── Everything else requires login ────────────────────────────
                 .anyRequest().authenticated()
