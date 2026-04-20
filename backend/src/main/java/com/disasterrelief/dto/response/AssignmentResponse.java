@@ -3,7 +3,6 @@ package com.disasterrelief.dto.response;
 import com.disasterrelief.entity.Assignment;
 import lombok.Builder;
 import lombok.Data;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data @Builder
@@ -20,5 +19,5 @@ public class AssignmentResponse {
     private LocalDateTime assignedAt;
     private LocalDateTime acceptedAt;
     private LocalDateTime completedAt;
-    private BigDecimal hoursLogged;
+    private Double hoursLogged;
 }
