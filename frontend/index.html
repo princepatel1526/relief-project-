@@ -3,55 +3,734 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In | Disaster Relief Platform</title>
-  <link rel="stylesheet" href="css/main.css">
+  <title>Sign In — Disaster Relief Platform</title>
   <style>
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-    .auth-card { background: white; border-radius: 16px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 25px 50px -12px rgba(0,0,0,.5); }
-    .auth-logo { text-align: center; margin-bottom: 32px; }
-    .auth-logo .logo-circle { width: 64px; height: 64px; background: #dc2626; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 12px; }
-    .auth-logo h1 { font-size: 22px; font-weight: 800; color: #1e293b; }
-    .auth-logo p { color: #64748b; font-size: 14px; }
-    .hidden { display: none; }
-    .auth-footer { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
-    .auth-footer a { color: #dc2626; font-weight: 600; text-decoration: none; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh; display: flex;
+      background: #f4f3f0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Split layout ─────────────────────────────────── */
+    .auth-left {
+      width: 42%; background: #111318;
+      display: flex; flex-direction: column;
+      padding: 48px;
+      position: relative; overflow: hidden;
+    }
+
+    @media (max-width: 860px) { .auth-left { display: none; } }
+
+    .auth-left::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 20% 80%, rgba(255,255,255,.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .brand-mark {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: auto;
+    }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(255,255,255,.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .brand-name { font-size: 14px; font-weight: 700; color: #e8e5df; }
+
+    .auth-left-body { margin-top: auto; margin-bottom: auto; padding-top: 60px; }
+
+    .auth-left-body h2 {
+      font-size: 30px; font-weight: 800; line-height: 1.2;
+      color: #f0ede8; letter-spacing: -.02em;
+      margin-bottom: 14px;
+    }
+    .auth-left-body p {
+      font-size: 14.5px; color: #6c6a64; line-height: 1.7;
+    }
+
+    .auth-stats {
+      display: flex; gap: 28px; margin-top: 40px;
+    }
+    .auth-stat-val { font-size: 22px; font-weight: 800; color: #f0ede8; line-height: 1; }
+    .auth-stat-lbl { font-size: 11px; color: #6c6a64; margin-top: 3px; font-weight: 500; }
+
+    .auth-left-footer {
+      margin-top: 40px;
+      font-size: 11.5px; color: #4a4845; line-height: 1.6;
+    }
+
+    /* ── Right panel (form) ───────────────────────────── */
+    .auth-right {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .auth-form-wrap { width: 100%; max-width: 380px; }
+
+    .auth-heading {
+      margin-bottom: 28px;
+    }
+    .auth-heading h1 {
+      font-size: 24px; font-weight: 800; color: #111110;
+      letter-spacing: -.02em; margin-bottom: 4px;
+    }
+    .auth-heading p { font-size: 13.5px; color: #8a8784; }
+
+    /* ── Form elements ────────────────────────────────── */
+    .form-group  { margin-bottom: 14px; }
+    .form-label  { display: block; font-size: 12.5px; font-weight: 600; color: #111110; margin-bottom: 5px; }
+    .form-control {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #e8e5e0; border-radius: 9px;
+      font-size: 14px; color: #111110; background: #fff; outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .form-control:hover:not(:focus) { border-color: #c9c5be; }
+    .form-control:focus {
+      border-color: #111110;
+      box-shadow: 0 0 0 3px rgba(17,17,17,.08);
+    }
+
+    .btn-submit {
+      width: 100%; padding: 11px;
+      background: #1a1a1a; color: #fff;
+      border: none; border-radius: 9px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+      margin-top: 4px;
+    }
+    .btn-submit:hover   { background: #2c2c2c; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    .btn-submit:active  { transform: scale(.98); }
+    .btn-submit:disabled{ opacity: .6; cursor: not-allowed; }
+
+    /* ── Feedback ─────────────────────────────────────── */
+    .form-alert {
+      padding: 11px 14px; border-radius: 9px; border: 1px solid;
+      font-size: 13px; font-weight: 500; margin-bottom: 14px;
+      display: none;
+    }
+    .form-alert.show { display: block; }
+    .form-alert.error   { background:#fdf0ee; color:#a8281a; border-color:#f0c4bc; }
+    .form-alert.success { background:#eef8f2; color:#1a6b3a; border-color:#b8e8cc; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-6px); }
+      40%     { transform: translateX(6px); }
+      60%     { transform: translateX(-4px); }
+      80%     { transform: translateX(4px); }
+    }
+    .shake { animation: shake .45s cubic-bezier(.36,.07,.19,.97); }
+
+    /* ── Footer links ─────────────────────────────────── */
+    .auth-form-footer {
+      margin-top: 18px; font-size: 13px; color: #8a8784; text-align: center;
+    }
+    .auth-form-footer a { color: #111110; font-weight: 600; text-decoration: none; }
+    .auth-form-footer a:hover { text-decoration: underline; }
+
+    .recovery-links {
+      display: flex; justify-content: space-between;
+      margin-top: 10px;
+    }
+    .recovery-links a {
+      font-size: 12.5px; color: #4a4845; text-decoration: none; font-weight: 500;
+      transition: color 150ms;
+    }
+    .recovery-links a:hover { color: #111110; text-decoration: underline; }
+
+    /* ── Recovery Modal ───────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      backdrop-filter: blur(5px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+      opacity: 0; pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
+
+    .rec-modal {
+      background: #fff; border-radius: 18px; width: 430px; max-width: 95vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,.18), 0 4px 16px rgba(0,0,0,.08);
+      overflow: hidden;
+      transform: scale(.96) translateY(-8px);
+      transition: transform 240ms cubic-bezier(.34,1.56,.64,1), opacity 200ms ease;
+      opacity: 0;
+    }
+    .overlay.open .rec-modal { transform: scale(1) translateY(0); opacity: 1; }
+
+    .rec-head {
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid #e8e5e0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .rec-head h3 { font-size: 16px; font-weight: 700; color: #111110; }
+    .rec-close {
+      background: none; border: none; font-size: 19px; cursor: pointer;
+      color: #8a8784; line-height: 1; padding: 4px; border-radius: 6px;
+      transition: background 150ms, color 150ms;
+    }
+    .rec-close:hover { background: #f4f3f0; color: #111110; }
+
+    /* Tabs */
+    .rec-tabs { display: flex; border-bottom: 1px solid #e8e5e0; }
+    .rec-tab {
+      flex: 1; padding: 11px; font-size: 13px; font-weight: 600; cursor: pointer;
+      border: none; background: none; color: #8a8784;
+      border-bottom: 2px solid transparent;
+      transition: color 150ms, border-color 150ms;
+    }
+    .rec-tab.active { color: #111110; border-bottom-color: #111110; }
+    .rec-tab:hover:not(.active) { color: #4a4845; }
+
+    /* Steps */
+    .rec-body { padding: 22px; }
+    .rec-step { display: none; }
+    .rec-step.active { display: block; }
+
+    .rec-hint {
+      background: #f9f8f6; border: 1px solid #e8e5e0; border-radius: 9px;
+      padding: 11px 14px; font-size: 12.5px; color: #4a4845;
+      margin-bottom: 16px; line-height: 1.55;
+    }
+
+    .rec-alert {
+      padding: 10px 13px; border-radius: 9px; border: 1px solid;
+      font-size: 13px; font-weight: 500; margin-bottom: 14px;
+      display: none;
+    }
+    .rec-alert.show { display: block; }
+    .rec-alert.error   { background:#fdf0ee; color:#a8281a; border-color:#f0c4bc; }
+    .rec-alert.success { background:#eef8f2; color:#1a6b3a; border-color:#b8e8cc; }
+    .rec-alert.info    { background:#eef3fb; color:#1a4080; border-color:#bcd0f0; }
+
+    /* OTP input row */
+    .otp-wrap {
+      display: flex; gap: 8px; margin-bottom: 14px;
+    }
+    .otp-input {
+      width: 44px; height: 48px;
+      border: 1px solid #e8e5e0; border-radius: 9px;
+      text-align: center; font-size: 20px; font-weight: 700; color: #111110;
+      outline: none; background: #fff;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+    .otp-input:focus {
+      border-color: #111110;
+      box-shadow: 0 0 0 3px rgba(17,17,17,.08);
+    }
+
+    .otp-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; color: #8a8784; margin-bottom: 16px;
+    }
+    .resend-btn {
+      background: none; border: none; font-size: 12px; font-weight: 600;
+      cursor: pointer; color: #111110; padding: 0;
+      text-decoration: underline;
+      transition: opacity 150ms;
+    }
+    .resend-btn:disabled { opacity: .4; cursor: not-allowed; text-decoration: none; }
+
+    /* Result card (username reveal) */
+    .result-card {
+      background: #f9f8f6; border: 1px solid #e8e5e0; border-radius: 11px;
+      padding: 16px 18px; margin-top: 4px;
+    }
+    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+    .result-row:not(:last-child) { border-bottom: 1px solid #e8e5e0; }
+    .result-key { font-size: 11.5px; font-weight: 600; color: #8a8784; text-transform: uppercase; letter-spacing: .04em; }
+    .result-val { font-size: 14px; font-weight: 700; color: #111110; font-family: monospace; }
+
+    .rec-footer {
+      padding: 0 22px 22px;
+      display: flex; justify-content: flex-end; gap: 8px;
+    }
+    .rec-btn {
+      padding: 9px 18px; border-radius: 9px; font-size: 13.5px; font-weight: 600;
+      cursor: pointer; border: 1px solid transparent;
+      transition: background 150ms, box-shadow 150ms, transform 150ms;
+    }
+    .rec-btn:active { transform: scale(.97); }
+    .rec-btn-cancel  { background: #f4f3f0; color: #4a4845; border-color: #e8e5e0; }
+    .rec-btn-cancel:hover  { background: #e8e5e0; }
+    .rec-btn-primary { background: #1a1a1a; color: #fff; }
+    .rec-btn-primary:hover { background: #2c2c2c; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    .rec-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(8px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    .anim-in { animation: fadeUp 220ms cubic-bezier(.4,0,.2,1) both; }
   </style>
 </head>
 <body>
-  <div class="auth-card">
-    <div class="auth-logo">
-      <div class="logo-circle">🚨</div>
-      <h1>Disaster Relief Platform</h1>
-      <p>Coordinate relief operations efficiently</p>
+
+  <!-- ═══════════════ LEFT BRANDING PANEL ═══════════════ -->
+  <div class="auth-left">
+    <div class="brand-mark">
+      <div class="brand-icon">🚨</div>
+      <span class="brand-name">Disaster Relief Platform</span>
     </div>
 
-    <div id="login-error" class="alert alert-danger hidden"></div>
+    <div class="auth-left-body">
+      <h2>Coordinate relief.<br>Save lives.</h2>
+      <p>A unified command center for disaster response teams — manage incidents, volunteers, inventory, and donations from one place.</p>
 
-    <form id="login-form">
-      <div class="form-group">
-        <label class="form-label" for="usernameOrEmail">Username or Email</label>
-        <input class="form-control" type="text" id="usernameOrEmail" name="usernameOrEmail" placeholder="admin or admin@disasterrelief.org" required autocomplete="username">
+      <div class="auth-stats">
+        <div>
+          <div class="auth-stat-val">24/7</div>
+          <div class="auth-stat-lbl">Monitoring</div>
+        </div>
+        <div>
+          <div class="auth-stat-val">Real-time</div>
+          <div class="auth-stat-lbl">Coordination</div>
+        </div>
+        <div>
+          <div class="auth-stat-val">Multi-role</div>
+          <div class="auth-stat-lbl">Access control</div>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input class="form-control" type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%; padding: 12px; font-size: 16px; margin-top: 8px;">Sign In</button>
-    </form>
-
-    <div class="auth-footer">
-      Don't have an account? <a href="register.html">Register here</a>
     </div>
 
-    <div style="margin-top: 24px; padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 12px; color: #64748b;">
-      <strong>Demo credentials:</strong><br>
-      Admin: <code>admin / password123</code><br>
-      Coordinator: <code>coordinator1 / password123</code><br>
-      Volunteer: <code>volunteer1 / password123</code>
+    <div class="auth-left-footer">
+      Secure · Role-based · Built for emergency operations
     </div>
   </div>
 
-  <div id="toast-container"></div>
+  <!-- ═══════════════ RIGHT FORM PANEL ═══════════════ -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+
+      <div class="auth-heading">
+        <h1>Welcome back</h1>
+        <p>Sign in to your account to continue</p>
+      </div>
+
+      <div id="login-error" class="form-alert error"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="usernameOrEmail">Username or Email</label>
+          <input class="form-control" type="text" id="usernameOrEmail" name="usernameOrEmail"
+                 placeholder="Enter your username or email" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-control" type="password" id="password" name="password"
+                 placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-submit" id="login-btn">Sign In</button>
+      </form>
+
+      <div class="recovery-links">
+        <a href="#" id="link-forgot-pw">Forgot password?</a>
+        <a href="#" id="link-forgot-un">Forgot username?</a>
+      </div>
+
+      <div class="auth-form-footer">
+        Don't have an account? <a href="register.html">Create one</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ RECOVERY MODAL ═══════════════ -->
+  <div class="overlay" id="overlay">
+    <div class="rec-modal">
+
+      <div class="rec-head">
+        <h3 id="rec-title">Account Recovery</h3>
+        <button class="rec-close" id="rec-close">✕</button>
+      </div>
+
+      <div class="rec-tabs">
+        <button class="rec-tab active" data-tab="pw">Forgot Password</button>
+        <button class="rec-tab"        data-tab="un">Forgot Username</button>
+      </div>
+
+      <!-- ── Forgot Password ────────────────────────── -->
+      <div class="rec-body" id="body-pw">
+
+        <!-- Step 1: phone -->
+        <div class="rec-step active" id="pw-s1">
+          <div class="rec-hint">Enter the phone number registered with your account to receive a one-time verification code.</div>
+          <div class="rec-alert" id="pw-s1-alert"></div>
+          <div class="form-group">
+            <label class="form-label">Mobile Number</label>
+            <input class="form-control" id="pw-phone" type="tel" maxlength="10" placeholder="9876543210">
+          </div>
+          <div class="rec-footer">
+            <button class="rec-btn rec-btn-cancel" onclick="closeOverlay()">Cancel</button>
+            <button class="rec-btn rec-btn-primary" id="pw-send-btn">Send OTP</button>
+          </div>
+        </div>
+
+        <!-- Step 2: verify OTP + new password -->
+        <div class="rec-step" id="pw-s2">
+          <div class="rec-hint">A 6-digit code was sent to your mobile. Enter it below along with your new password.</div>
+          <div class="rec-alert" id="pw-s2-alert"></div>
+          <div class="form-group">
+            <label class="form-label">Enter OTP</label>
+            <div class="otp-wrap" id="pw-otp-wrap"></div>
+            <div class="otp-meta">
+              <span id="pw-timer"></span>
+              <button class="resend-btn" id="pw-resend" disabled>Resend OTP</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input class="form-control" id="pw-new" type="password" placeholder="Minimum 8 characters">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <input class="form-control" id="pw-confirm" type="password" placeholder="Repeat new password">
+          </div>
+          <div class="rec-footer">
+            <button class="rec-btn rec-btn-cancel" id="pw-back">← Back</button>
+            <button class="rec-btn rec-btn-primary" id="pw-reset-btn">Reset Password</button>
+          </div>
+        </div>
+
+        <!-- Step 3: success -->
+        <div class="rec-step" id="pw-s3">
+          <div style="text-align:center; padding: 12px 0 20px;">
+            <div style="font-size:44px; margin-bottom:14px;">✅</div>
+            <h3 style="font-size:17px; font-weight:700; color:#111110; margin-bottom:8px;">Password Reset!</h3>
+            <p style="font-size:13.5px; color:#8a8784; line-height:1.6;">Your password has been changed successfully.<br>You can now sign in with your new password.</p>
+          </div>
+          <div class="rec-footer">
+            <button class="rec-btn rec-btn-primary" style="width:100%" onclick="closeOverlay()">Go to Sign In</button>
+          </div>
+        </div>
+
+      </div><!-- /body-pw -->
+
+      <!-- ── Forgot Username ─────────────────────────── -->
+      <div class="rec-body" id="body-un" style="display:none">
+
+        <!-- Step 1: phone -->
+        <div class="rec-step active" id="un-s1">
+          <div class="rec-hint">Enter the phone number linked to your account. After verification we'll show your username.</div>
+          <div class="rec-alert" id="un-s1-alert"></div>
+          <div class="form-group">
+            <label class="form-label">Mobile Number</label>
+            <input class="form-control" id="un-phone" type="tel" maxlength="10" placeholder="9876543210">
+          </div>
+          <div class="rec-footer">
+            <button class="rec-btn rec-btn-cancel" onclick="closeOverlay()">Cancel</button>
+            <button class="rec-btn rec-btn-primary" id="un-send-btn">Send OTP</button>
+          </div>
+        </div>
+
+        <!-- Step 2: verify OTP -->
+        <div class="rec-step" id="un-s2">
+          <div class="rec-hint">Enter the 6-digit code sent to your mobile number.</div>
+          <div class="rec-alert" id="un-s2-alert"></div>
+          <div class="form-group">
+            <label class="form-label">Enter OTP</label>
+            <div class="otp-wrap" id="un-otp-wrap"></div>
+            <div class="otp-meta">
+              <span id="un-timer"></span>
+              <button class="resend-btn" id="un-resend" disabled>Resend OTP</button>
+            </div>
+          </div>
+          <div class="rec-footer">
+            <button class="rec-btn rec-btn-cancel" id="un-back">← Back</button>
+            <button class="rec-btn rec-btn-primary" id="un-verify-btn">Verify OTP</button>
+          </div>
+        </div>
+
+        <!-- Step 3: result -->
+        <div class="rec-step" id="un-s3">
+          <p style="font-size:13.5px; color:#4a4845; margin-bottom:14px; line-height:1.6;">
+            Identity verified ✅ — here are your account details:
+          </p>
+          <div class="result-card anim-in" id="un-result"></div>
+          <div class="rec-footer" style="margin-top:16px;">
+            <button class="rec-btn rec-btn-primary" style="width:100%" onclick="closeOverlay()">Back to Sign In</button>
+          </div>
+        </div>
+
+      </div><!-- /body-un -->
+
+    </div><!-- /rec-modal -->
+  </div><!-- /overlay -->
+
   <script type="module" src="js/auth.js"></script>
+
+  <script type="module">
+    const API = 'http://localhost:8080/api';
+
+    // ── Shared state ──────────────────────────────────────────────
+    let activeTab    = 'pw';
+    let pwPhone      = '';
+    let unPhone      = '';
+    let pwTimerInt   = null;
+    let unTimerInt   = null;
+
+    // ── Overlay open / close ──────────────────────────────────────
+    const overlay = document.getElementById('overlay');
+
+    window.openOverlay = function(tab) {
+      switchTab(tab);
+      overlay.classList.add('open');
+    };
+    window.closeOverlay = function() {
+      overlay.classList.remove('open');
+      setTimeout(resetAll, 250);
+    };
+
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
+
+    document.getElementById('rec-close').onclick = closeOverlay;
+
+    document.getElementById('link-forgot-pw').addEventListener('click', e => {
+      e.preventDefault(); openOverlay('pw');
+    });
+    document.getElementById('link-forgot-un').addEventListener('click', e => {
+      e.preventDefault(); openOverlay('un');
+    });
+
+    // ── Tabs ──────────────────────────────────────────────────────
+    document.querySelectorAll('.rec-tab').forEach(t =>
+      t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.rec-tab').forEach(t =>
+        t.classList.toggle('active', t.dataset.tab === tab));
+      document.getElementById('body-pw').style.display = tab === 'pw' ? '' : 'none';
+      document.getElementById('body-un').style.display = tab === 'un' ? '' : 'none';
+      clearAlerts();
+    }
+
+    // ── OTP input boxes ───────────────────────────────────────────
+    function buildOtpBoxes(wrapId) {
+      const wrap = document.getElementById(wrapId);
+      wrap.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const inp = document.createElement('input');
+        inp.className = 'otp-input';
+        inp.type = 'text'; inp.maxLength = 1;
+        inp.inputMode = 'numeric'; inp.pattern = '[0-9]';
+        inp.addEventListener('input', e => {
+          e.target.value = e.target.value.replace(/\D/, '');
+          if (e.target.value && inp.nextElementSibling) inp.nextElementSibling.focus();
+        });
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && !inp.value && inp.previousElementSibling)
+            inp.previousElementSibling.focus();
+        });
+        inp.addEventListener('paste', e => {
+          e.preventDefault();
+          const digits = (e.clipboardData.getData('text') || '').replace(/\D/g,'').slice(0,6);
+          [...wrap.querySelectorAll('.otp-input')].forEach((b,i) => {
+            b.value = digits[i] || '';
+          });
+        });
+        wrap.appendChild(inp);
+      }
+    }
+
+    function getOtp(wrapId) {
+      return [...document.getElementById(wrapId).querySelectorAll('.otp-input')]
+        .map(i => i.value).join('');
+    }
+
+    // ── Countdown timer ───────────────────────────────────────────
+    function startTimer(displayId, resendId, seconds, onExpire) {
+      clearInterval(activeTab === 'pw' ? pwTimerInt : unTimerInt);
+      const display = document.getElementById(displayId);
+      const resend  = document.getElementById(resendId);
+      resend.disabled = true;
+      let remaining  = seconds;
+
+      const interval = setInterval(() => {
+        remaining--;
+        const m = String(Math.floor(remaining / 60)).padStart(2,'0');
+        const s = String(remaining % 60).padStart(2,'0');
+        display.textContent = `Code expires in ${m}:${s}`;
+        if (remaining <= 0) {
+          clearInterval(interval);
+          display.textContent = 'OTP expired';
+          resend.disabled = false;
+          if (onExpire) onExpire();
+        }
+      }, 1000);
+
+      display.textContent = `Code expires in 05:00`;
+      if (activeTab === 'pw') pwTimerInt = interval;
+      else                     unTimerInt = interval;
+      return interval;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
+    function showAlert(id, type, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg; el.className = `rec-alert show ${type}`;
+    }
+    function clearAlerts() {
+      document.querySelectorAll('.rec-alert').forEach(el => {
+        el.className = 'rec-alert'; el.textContent = '';
+      });
+    }
+    function setStep(prefix, step) {
+      const body = document.getElementById(prefix === 'pw' ? 'body-pw' : 'body-un');
+      body.querySelectorAll('.rec-step').forEach(s => s.classList.remove('active'));
+      body.querySelector(`#${prefix}-s${step}`).classList.add('active');
+    }
+    function setBtn(id, disabled, text) {
+      const b = document.getElementById(id);
+      b.disabled = disabled; b.textContent = text;
+    }
+    function isValidPhone(ph) { return /^[6-9][0-9]{9}$/.test(ph); }
+
+    async function postJson(path, body) {
+      const res  = await fetch(`${API}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Request failed');
+      return data;
+    }
+
+    function resetAll() {
+      // Reset pw flow
+      setStep('pw', 1);
+      document.getElementById('pw-phone').value = '';
+      document.getElementById('pw-new').value   = '';
+      document.getElementById('pw-confirm').value = '';
+      clearInterval(pwTimerInt);
+      document.getElementById('pw-timer').textContent = '';
+      document.getElementById('pw-resend').disabled = true;
+
+      // Reset un flow
+      setStep('un', 1);
+      document.getElementById('un-phone').value = '';
+      document.getElementById('un-result').innerHTML = '';
+      clearInterval(unTimerInt);
+      document.getElementById('un-timer').textContent = '';
+      document.getElementById('un-resend').disabled = true;
+
+      clearAlerts();
+    }
+
+    // ── FORGOT PASSWORD ───────────────────────────────────────────
+
+    async function pwSendOtp() {
+      pwPhone = document.getElementById('pw-phone').value.trim();
+      if (!isValidPhone(pwPhone))
+        return showAlert('pw-s1-alert','error','Enter a valid 10-digit mobile number.');
+
+      setBtn('pw-send-btn', true, 'Sending…');
+      try {
+        const data = await postJson('/auth/send-otp', { phone: pwPhone });
+        buildOtpBoxes('pw-otp-wrap');
+        setStep('pw', 2);
+        startTimer('pw-timer', 'pw-resend', 300);
+        // DEV: show OTP in alert so testers can copy it
+        if (data.devOtp) showAlert('pw-s2-alert','info',`[Dev] Your OTP is: ${data.devOtp}`);
+      } catch (err) {
+        showAlert('pw-s1-alert','error', err.message);
+      } finally {
+        setBtn('pw-send-btn', false, 'Send OTP');
+      }
+    }
+
+    async function pwReset() {
+      const otp     = getOtp('pw-otp-wrap');
+      const newPw   = document.getElementById('pw-new').value;
+      const confirm = document.getElementById('pw-confirm').value;
+
+      if (otp.length !== 6)   return showAlert('pw-s2-alert','error','Enter the complete 6-digit OTP.');
+      if (!newPw)              return showAlert('pw-s2-alert','error','Please enter a new password.');
+      if (newPw.length < 8)   return showAlert('pw-s2-alert','error','Password must be at least 8 characters.');
+      if (newPw !== confirm)   return showAlert('pw-s2-alert','error','Passwords do not match.');
+
+      setBtn('pw-reset-btn', true, 'Resetting…');
+      try {
+        await postJson('/auth/reset-password', {
+          phone: pwPhone, otp, newPassword: newPw, confirmPassword: confirm
+        });
+        clearInterval(pwTimerInt);
+        setStep('pw', 3);
+      } catch (err) {
+        showAlert('pw-s2-alert','error', err.message);
+      } finally {
+        setBtn('pw-reset-btn', false, 'Reset Password');
+      }
+    }
+
+    document.getElementById('pw-send-btn').onclick  = pwSendOtp;
+    document.getElementById('pw-reset-btn').onclick = pwReset;
+    document.getElementById('pw-back').onclick      = () => { clearInterval(pwTimerInt); setStep('pw',1); clearAlerts(); };
+    document.getElementById('pw-resend').onclick    = () => {
+      clearAlerts(); pwSendOtp();
+    };
+
+    // ── FORGOT USERNAME ───────────────────────────────────────────
+
+    async function unSendOtp() {
+      unPhone = document.getElementById('un-phone').value.trim();
+      if (!isValidPhone(unPhone))
+        return showAlert('un-s1-alert','error','Enter a valid 10-digit mobile number.');
+
+      setBtn('un-send-btn', true, 'Sending…');
+      try {
+        const data = await postJson('/auth/send-otp', { phone: unPhone });
+        buildOtpBoxes('un-otp-wrap');
+        setStep('un', 2);
+        startTimer('un-timer', 'un-resend', 300);
+        if (data.devOtp) showAlert('un-s2-alert','info',`[Dev] Your OTP is: ${data.devOtp}`);
+      } catch (err) {
+        showAlert('un-s1-alert','error', err.message);
+      } finally {
+        setBtn('un-send-btn', false, 'Send OTP');
+      }
+    }
+
+    async function unVerify() {
+      const otp = getOtp('un-otp-wrap');
+      if (otp.length !== 6) return showAlert('un-s2-alert','error','Enter the complete 6-digit OTP.');
+
+      setBtn('un-verify-btn', true, 'Verifying…');
+      try {
+        const data = await postJson('/auth/forgot-username', { phone: unPhone, otp });
+        clearInterval(unTimerInt);
+        document.getElementById('un-result').innerHTML = `
+          <div class="result-row">
+            <span class="result-key">Username</span>
+            <span class="result-val">${data.username}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">Email</span>
+            <span class="result-val">${data.email}</span>
+          </div>`;
+        setStep('un', 3);
+      } catch (err) {
+        showAlert('un-s2-alert','error', err.message);
+      } finally {
+        setBtn('un-verify-btn', false, 'Verify OTP');
+      }
+    }
+
+    document.getElementById('un-send-btn').onclick   = unSendOtp;
+    document.getElementById('un-verify-btn').onclick = unVerify;
+    document.getElementById('un-back').onclick       = () => { clearInterval(unTimerInt); setStep('un',1); clearAlerts(); };
+    document.getElementById('un-resend').onclick     = () => { clearAlerts(); unSendOtp(); };
+  </script>
 </body>
 </html>

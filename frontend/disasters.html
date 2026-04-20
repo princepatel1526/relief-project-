@@ -138,12 +138,20 @@
 
   <script type="module">
     import api from './js/api.js';
-    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { requireAuth, renderUserInfo, logout as authLogout, hasRole } from './js/auth.js';
     import { showToast, severityBadge, statusBadge, buildPagination, formatDate } from './js/utils.js';
+    import './js/profile.js';
 
     window.logout = authLogout;
     requireAuth();
     renderUserInfo();
+
+    // Donors cannot add or change disasters — hide write controls
+    if (hasRole('DONOR')) {
+      document.querySelector('[onclick="openCreateModal()"]')?.remove();
+      // Action buttons in each row will also be hidden by the row renderer check below
+    }
+    const canWrite = !hasRole('DONOR');
 
     let currentPage = 0;
 
@@ -183,7 +191,7 @@
               <td><span class="badge badge-warning">${d.activeRequestsCount} pending</span></td>
               <td>
                 <div style="display:flex;gap:6px">
-                  <button class="btn btn-sm btn-outline" onclick="changeStatus(${d.id}, '${d.status}')">Status</button>
+                  ${canWrite ? `<button class="btn btn-sm btn-outline" onclick="changeStatus(${d.id}, '${d.status}')">Status</button>` : ''}
                   <a href="assignments.html?disasterId=${d.id}" class="btn btn-sm btn-secondary">Assign</a>
                 </div>
               </td>

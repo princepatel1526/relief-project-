@@ -65,36 +65,32 @@ if (document.getElementById('login-form')) {
   const form     = document.getElementById('login-form');
   const errorDiv = document.getElementById('login-error');
 
+  function showLoginError(msg) {
+    errorDiv.textContent = msg;
+    errorDiv.classList.add('show');
+    form.classList.add('shake');
+    setTimeout(() => form.classList.remove('shake'), 500);
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const btn = form.querySelector('[type="submit"]');
+    const btn = document.getElementById('login-btn') || form.querySelector('[type="submit"]');
     btn.disabled    = true;
     btn.textContent = 'Signing in…';
-    errorDiv.classList.add('hidden');
+    errorDiv.classList.remove('show');
     errorDiv.textContent = '';
 
     try {
-      // Send as 'email' — backend principal() checks email first then username,
-      // so typing either "admin" or "admin@example.com" works.
       const data = await api.auth.login({
         email:    form.usernameOrEmail.value.trim(),
         password: form.password.value,
       });
 
       saveSession(data);
-
-      // Redirect based on role
-      const roles = data.roles ?? [];
-      const isAdminOrCoord = roles.some(r =>
-        r === 'ROLE_ADMIN' || r === 'ROLE_COORDINATOR'
-      );
-      window.location.href = isAdminOrCoord
-        ? '/admin-dashboard.html'
-        : '/admin-dashboard.html'; // all roles go to dashboard for now
+      window.location.href = '/admin-dashboard.html';
 
     } catch (err) {
-      errorDiv.textContent = err.message || 'Login failed. Check your credentials.';
-      errorDiv.classList.remove('hidden');
+      showLoginError(err.message || 'Invalid credentials. Please try again.');
     } finally {
       btn.disabled    = false;
       btn.textContent = 'Sign In';
@@ -107,27 +103,28 @@ if (document.getElementById('login-form')) {
 // =============================================
 
 if (document.getElementById('register-form')) {
-  const form     = document.getElementById('register-form');
-  const errorDiv = document.getElementById('register-error');
+  const form       = document.getElementById('register-form');
+  const errorDiv   = document.getElementById('register-error');
+  const successDiv = document.getElementById('register-success');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const btn = form.querySelector('[type="submit"]');
+    const btn = document.getElementById('register-btn') || form.querySelector('[type="submit"]');
     btn.disabled    = true;
     btn.textContent = 'Creating account…';
-    errorDiv.classList.add('hidden');
+    errorDiv.classList.remove('show');
     errorDiv.textContent = '';
 
     if (form.password.value !== form.confirmPassword.value) {
       errorDiv.textContent = 'Passwords do not match.';
-      errorDiv.classList.remove('hidden');
+      errorDiv.classList.add('show');
       btn.disabled    = false;
       btn.textContent = 'Create Account';
       return;
     }
 
     try {
-      const data = await api.auth.register({
+      await api.auth.register({
         username: form.username.value.trim(),
         email:    form.email.value.trim(),
         password: form.password.value,
@@ -136,12 +133,17 @@ if (document.getElementById('register-form')) {
         role:     form.role.value,
       });
 
-      saveSession(data);
-      window.location.href = '/admin-dashboard.html';
+      // Show success banner, hide form, redirect to login
+      form.style.display = 'none';
+      successDiv.innerHTML =
+        '✅ <strong>Account created successfully!</strong><br>' +
+        '<span style="font-weight:400;opacity:.8">Redirecting to sign in page in 3 seconds…</span>';
+      successDiv.classList.add('show');
+      setTimeout(() => { window.location.href = '/index.html'; }, 3000);
 
     } catch (err) {
       errorDiv.textContent = err.message || 'Registration failed. Please try again.';
-      errorDiv.classList.remove('hidden');
+      errorDiv.classList.add('show');
     } finally {
       btn.disabled    = false;
       btn.textContent = 'Create Account';

@@ -154,12 +154,19 @@
 
   <script type="module">
     import api from './js/api.js';
-    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { requireAuth, renderUserInfo, logout as authLogout, hasRole } from './js/auth.js';
     import { showToast, buildPagination } from './js/utils.js';
+    import './js/profile.js';
 
     window.logout = authLogout;
     requireAuth();
     renderUserInfo();
+
+    // Donors cannot add or modify inventory — hide write controls
+    if (hasRole('DONOR')) {
+      document.querySelector('[onclick="openAddModal()"]')?.remove();
+    }
+    const canWrite = !hasRole('DONOR');
 
     let currentPage = 0;
     let editingId = null;
@@ -191,10 +198,10 @@
                 : '<span class="badge badge-success">OK</span>'}
               </td>
               <td>
-                <div style="display:flex;gap:6px">
+                ${canWrite ? `<div style="display:flex;gap:6px">
                   <button class="btn btn-sm btn-secondary" onclick="openQtyModal(${i.id}, '${i.itemName}')">±Qty</button>
                   <button class="btn btn-sm btn-outline" onclick="deleteItem(${i.id}, '${i.itemName}')">🗑</button>
-                </div>
+                </div>` : '<span style="color:var(--text-muted);font-size:12px">View only</span>'}
               </td>
             </tr>`).join('');
         }

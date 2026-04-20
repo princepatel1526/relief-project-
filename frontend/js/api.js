@@ -28,9 +28,12 @@ const api = {
     const res = await fetch(url, options);
 
     if (res.status === 401) {
-      localStorage.clear();
-      window.location.href = '/index.html';
-      return;
+      // Don't redirect on auth endpoints — let the caller handle the error
+      if (!path.startsWith('/auth/')) {
+        localStorage.clear();
+        window.location.href = '/index.html';
+        return;
+      }
     }
 
     const data = res.headers.get('content-type')?.includes('application/json')
@@ -55,6 +58,13 @@ const api = {
   auth: {
     login:    (body) => api.post('/auth/login', body),
     register: (body) => api.post('/auth/register', body),
+  },
+
+  // Current user profile
+  users: {
+    me:             ()     => api.get('/users/me'),
+    updateMe:       (body) => api.put('/users/me', body),
+    changePassword: (body) => api.post('/users/me/change-password', body),
   },
 
   // Disasters

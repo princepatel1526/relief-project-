@@ -3,74 +3,249 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register | Disaster Relief Platform</title>
-  <link rel="stylesheet" href="css/main.css">
+  <title>Create Account — Disaster Relief Platform</title>
   <style>
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px; }
-    .auth-card { background: white; border-radius: 16px; padding: 40px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,.5); }
-    .auth-logo { text-align: center; margin-bottom: 28px; }
-    .auth-logo .logo-circle { width: 56px; height: 56px; background: #dc2626; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 10px; }
-    .auth-logo h1 { font-size: 20px; font-weight: 800; color: #1e293b; }
-    .hidden { display: none; }
-    .auth-footer { text-align: center; margin-top: 16px; font-size: 14px; color: #64748b; }
-    .auth-footer a { color: #dc2626; font-weight: 600; text-decoration: none; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh; display: flex;
+      background: #f4f3f0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Split layout ─────────────────────────────────── */
+    .auth-left {
+      width: 38%; background: #111318;
+      display: flex; flex-direction: column;
+      padding: 48px;
+      position: relative; overflow: hidden;
+    }
+
+    @media (max-width: 860px) { .auth-left { display: none; } }
+
+    .auth-left::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 80% 20%, rgba(255,255,255,.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .brand-mark {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: auto;
+    }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(255,255,255,.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .brand-name { font-size: 14px; font-weight: 700; color: #e8e5df; }
+
+    .auth-left-body { margin-top: auto; margin-bottom: auto; padding-top: 60px; }
+    .auth-left-body h2 {
+      font-size: 28px; font-weight: 800; line-height: 1.25;
+      color: #f0ede8; letter-spacing: -.02em; margin-bottom: 12px;
+    }
+    .auth-left-body p { font-size: 14px; color: #6c6a64; line-height: 1.7; }
+
+    .role-list { margin-top: 28px; display: flex; flex-direction: column; gap: 10px; }
+    .role-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: #8a8784;
+    }
+    .role-dot { width: 6px; height: 6px; border-radius: 50%; background: #4a4845; flex-shrink: 0; }
+
+    .auth-left-footer { margin-top: 40px; font-size: 11.5px; color: #4a4845; }
+
+    /* ── Right panel ──────────────────────────────────── */
+    .auth-right {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 32px 24px;
+    }
+
+    .auth-form-wrap { width: 100%; max-width: 420px; }
+
+    .auth-heading { margin-bottom: 22px; }
+    .auth-heading h1 {
+      font-size: 22px; font-weight: 800; color: #111110;
+      letter-spacing: -.02em; margin-bottom: 4px;
+    }
+    .auth-heading p { font-size: 13px; color: #8a8784; }
+
+    /* ── Form ─────────────────────────────────────────── */
+    .form-group  { margin-bottom: 13px; }
+    .form-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-bottom: 13px; }
+    .form-label  { display: block; font-size: 12px; font-weight: 600; color: #111110; margin-bottom: 5px; }
+
+    .form-control {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid #e8e5e0; border-radius: 9px;
+      font-size: 13.5px; color: #111110; background: #fff; outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .form-control:hover:not(:focus) { border-color: #c9c5be; }
+    .form-control:focus {
+      border-color: #111110;
+      box-shadow: 0 0 0 3px rgba(17,17,17,.08);
+    }
+    select.form-control { cursor: pointer; background: #fff; }
+
+    .btn-submit {
+      width: 100%; padding: 11px;
+      background: #1a1a1a; color: #fff;
+      border: none; border-radius: 9px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+      margin-top: 4px;
+    }
+    .btn-submit:hover   { background: #2c2c2c; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    .btn-submit:active  { transform: scale(.98); }
+    .btn-submit:disabled{ opacity: .6; cursor: not-allowed; }
+
+    .form-alert {
+      padding: 10px 13px; border-radius: 9px; border: 1px solid;
+      font-size: 12.5px; font-weight: 500; margin-bottom: 13px; display: none;
+    }
+    .form-alert.show   { display: block; }
+    .form-alert.error  { background:#fdf0ee; color:#a8281a; border-color:#f0c4bc; }
+    .form-alert.success{ background:#eef8f2; color:#1a6b3a; border-color:#b8e8cc; }
+
+    .auth-form-footer {
+      margin-top: 16px; font-size: 13px; color: #8a8784; text-align: center;
+    }
+    .auth-form-footer a { color: #111110; font-weight: 600; text-decoration: none; }
+    .auth-form-footer a:hover { text-decoration: underline; }
+
+    /* Role description hint */
+    .role-hint {
+      font-size: 11.5px; color: #8a8784; margin-top: 5px; line-height: 1.4;
+      min-height: 16px; transition: opacity 150ms;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .auth-form-wrap { animation: fadeUp 220ms cubic-bezier(.4,0,.2,1) both; }
   </style>
 </head>
 <body>
-  <div class="auth-card">
-    <div class="auth-logo">
-      <div class="logo-circle">🚨</div>
-      <h1>Create Account</h1>
+
+  <!-- ═══════════════ LEFT BRANDING ═══════════════ -->
+  <div class="auth-left">
+    <div class="brand-mark">
+      <div class="brand-icon">🚨</div>
+      <span class="brand-name">Disaster Relief Platform</span>
     </div>
 
-    <div id="register-error" class="alert alert-danger hidden"></div>
+    <div class="auth-left-body">
+      <h2>Join the<br>response team.</h2>
+      <p>Choose a role that matches your contribution to disaster relief operations.</p>
 
-    <form id="register-form">
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Full Name</label>
-          <input class="form-control" type="text" name="fullName" placeholder="Rahul Sharma" required>
+      <div class="role-list">
+        <div class="role-item">
+          <div class="role-dot"></div>
+          <span><strong style="color:#c8c5be">Admin</strong> — Full system access</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">Username</label>
-          <input class="form-control" type="text" name="username" placeholder="rahul123" required minlength="3">
+        <div class="role-item">
+          <div class="role-dot"></div>
+          <span><strong style="color:#c8c5be">Coordinator</strong> — Manage operations & teams</span>
         </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Email</label>
-        <input class="form-control" type="email" name="email" placeholder="rahul@example.com" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Phone (Indian)</label>
-        <input class="form-control" type="tel" name="phone" placeholder="9876543210" pattern="[6-9][0-9]{9}">
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input class="form-control" type="password" name="password" placeholder="Min 8 chars" required minlength="8">
+        <div class="role-item">
+          <div class="role-dot"></div>
+          <span><strong style="color:#c8c5be">Volunteer</strong> — Field relief worker</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">Confirm Password</label>
-          <input class="form-control" type="password" name="confirmPassword" placeholder="Confirm" required>
+        <div class="role-item">
+          <div class="role-dot"></div>
+          <span><strong style="color:#c8c5be">Donor</strong> — Contribute resources</span>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Role</label>
-        <select class="form-control" name="role">
-          <option value="VOLUNTEER">Volunteer</option>
-          <option value="COORDINATOR">Coordinator</option>
-          <option value="DONOR">Donor</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%; padding: 12px; font-size: 16px; margin-top: 4px;">Create Account</button>
-    </form>
+    </div>
 
-    <div class="auth-footer">
-      Already have an account? <a href="index.html">Sign in</a>
+    <div class="auth-left-footer">
+      All accounts are verified before gaining operational access.
     </div>
   </div>
 
-  <div id="toast-container"></div>
+  <!-- ═══════════════ RIGHT FORM ═══════════════ -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+
+      <div class="auth-heading">
+        <h1>Create an account</h1>
+        <p>Fill in your details to get started</p>
+      </div>
+
+      <div id="register-error"   class="form-alert error"></div>
+      <div id="register-success" class="form-alert success" style="text-align:center; padding:18px 13px;"></div>
+
+      <form id="register-form">
+        <div class="form-grid">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Full Name</label>
+            <input class="form-control" type="text" name="fullName" placeholder="Rahul Sharma" required>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Username</label>
+            <input class="form-control" type="text" name="username" placeholder="rahul123" required minlength="3">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-control" type="email" name="email" placeholder="rahul@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <input class="form-control" type="tel" name="phone" placeholder="9876543210" pattern="[6-9][0-9]{9}">
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" name="password" placeholder="Min 8 chars" required minlength="8">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Confirm Password</label>
+            <input class="form-control" type="password" name="confirmPassword" placeholder="Repeat" required>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:13px">
+          <label class="form-label">Role</label>
+          <select class="form-control" name="role" id="role-select">
+            <option value="VOLUNTEER">Volunteer — Field relief worker</option>
+            <option value="COORDINATOR">Coordinator — Manage operations</option>
+            <option value="DONOR">Donor — Contribute resources</option>
+          </select>
+          <div class="role-hint" id="role-hint">Volunteers assist directly in field operations and disaster zones.</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="register-btn">Create Account</button>
+      </form>
+
+      <div class="auth-form-footer">
+        Already have an account? <a href="index.html">Sign in</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Role hints
+    const hints = {
+      VOLUNTEER:   'Volunteers assist directly in field operations and disaster zones.',
+      COORDINATOR: 'Coordinators manage teams, assignments, and operational workflows.',
+      DONOR:       'Donors contribute financial or material resources to relief efforts.',
+    };
+    document.getElementById('role-select').addEventListener('change', function() {
+      document.getElementById('role-hint').textContent = hints[this.value] || '';
+    });
+  </script>
+
   <script type="module" src="js/auth.js"></script>
 </body>
 </html>
