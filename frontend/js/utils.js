@@ -2,7 +2,7 @@ export function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
   if (!container) return;
 
-  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const icons = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Info' };
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.innerHTML = `<span>${icons[type] || ''}</span> ${message}`;
@@ -20,6 +20,27 @@ export function formatDate(dateStr) {
 export function formatCurrency(amount) {
   if (amount == null) return '-';
   return '₹' + Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+}
+
+export function formatCurrencyCompactIndian(amount) {
+  if (amount == null || Number.isNaN(Number(amount))) return '-';
+  const value = Number(amount);
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+
+  if (abs >= 10000000) { // Crore
+    const crore = abs / 10000000;
+    const digits = crore >= 100 ? 0 : crore >= 10 ? 1 : 2;
+    return `${sign}₹${Number(crore.toFixed(digits)).toLocaleString('en-IN')}Cr`;
+  }
+
+  if (abs >= 100000) { // Lakh
+    const lakh = abs / 100000;
+    const digits = lakh >= 100 ? 0 : lakh >= 10 ? 1 : 2;
+    return `${sign}₹${Number(lakh.toFixed(digits)).toLocaleString('en-IN')}L`;
+  }
+
+  return `${sign}₹${abs.toLocaleString('en-IN')}`;
 }
 
 export function severityBadge(severity) {
@@ -110,8 +131,9 @@ export function loading(container, msg = 'Loading...') {
 export function empty(container, title = 'No data', msg = '') {
   container.innerHTML = `
     <div class="empty-state">
-      <div class="icon">📋</div>
+      <div class="icon"><i data-lucide="list-checks"></i></div>
       <h3>${title}</h3>
       <p>${msg}</p>
     </div>`;
+  if (window.lucide) window.lucide.createIcons();
 }

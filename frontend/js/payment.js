@@ -91,7 +91,7 @@ async function handlePaymentSuccess(response, btn) {
       razorpaySignature: response.razorpay_signature,
     });
 
-    showToast('Payment successful! Thank you for your donation 🙏', 'success');
+    showToast('Payment successful! Thank you for your donation.', 'success');
     document.getElementById('donation-success')?.classList.remove('hidden');
     document.getElementById('donation-form')?.classList.add('hidden');
   } catch (err) {

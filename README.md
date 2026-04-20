@@ -36,6 +36,27 @@ docker-compose up -d
 Backend: http://localhost:8080/api  
 Frontend: open `frontend/index.html` in browser (or use Live Server)
 
+### Option A+ — One-command local dev with auto-ngrok (payments/webhook)
+
+This project’s webhook endpoint (`POST /api/payments/webhook`) must be publicly reachable for Razorpay webhook callbacks during local development.
+Use the helper script below to start MySQL + backend + frontend static server + ngrok together:
+
+```bash
+./scripts/dev-up.sh
+```
+
+The script prints:
+- Frontend URL
+- Backend URL
+- ngrok public URL
+- exact webhook URL to configure in Razorpay dashboard
+
+Stop everything with `Ctrl+C` (graceful shutdown) or:
+
+```bash
+./scripts/dev-down.sh
+```
+
 ### Option B — Manual Setup
 
 **1. MySQL**
@@ -43,6 +64,18 @@ Frontend: open `frontend/index.html` in browser (or use Live Server)
 -- Run schema and seed
 mysql -u root -p < backend/src/main/resources/db/schema.sql
 mysql -u root -p disaster_relief_db < backend/src/main/resources/db/seed.sql
+```
+
+### Demo reset/reseed (presentation data)
+
+Use the demo seed to populate realistic India-focused activity across incidents, assignments, inventory, shelters, notifications, audit logs, and donations.
+
+```bash
+# Reset only demo seed data (safe to run repeatedly)
+mysql -u root -p disaster_relief_db < backend/src/main/resources/db/reset_demo.sql
+
+# Re-apply rich demo data (idempotent inserts)
+mysql -u root -p disaster_relief_db < backend/src/main/resources/db/seed_demo.sql
 ```
 
 **2. Configure `application.properties`**
