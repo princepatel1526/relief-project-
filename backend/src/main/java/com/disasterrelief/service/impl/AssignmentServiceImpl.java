@@ -101,9 +101,9 @@ public class AssignmentServiceImpl {
         } else if (newStatus == Assignment.AssignmentStatus.COMPLETED) {
             assignment.setCompletedAt(LocalDateTime.now());
             if (hoursLogged != null) {
-                assignment.setHoursLogged(java.math.BigDecimal.valueOf(hoursLogged));
+                assignment.setHoursLogged(hoursLogged);
                 Volunteer v = assignment.getVolunteer();
-                v.setTotalHours(v.getTotalHours().add(java.math.BigDecimal.valueOf(hoursLogged)));
+                v.setTotalHours((v.getTotalHours() != null ? v.getTotalHours() : 0.0) + hoursLogged);
                 volunteerRepository.save(v);
             }
             assignment.getVolunteer().setAvailability(Volunteer.Availability.AVAILABLE);
