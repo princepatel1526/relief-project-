@@ -12,6 +12,7 @@ import com.disasterrelief.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,8 +37,22 @@ public class AuthServiceImpl {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
+        String principal = request.principal();
+        if (principal == null || principal.isBlank()) {
+            throw new BadCredentialsException("Invalid credentials");
+        }
+
+        User existingUser = userRepository.findByEmail(principal)
+                .or(() -> userRepository.findByUsername(principal))
+                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+
+        String storedPassword = existingUser.getPassword();
+        if (storedPassword == null || !passwordEncoder.matches(request.getPassword(), storedPassword)) {
+            throw new BadCredentialsException("Invalid credentials");
+        }
+
         Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsernameOrEmail(), request.getPassword()));
+                new UsernamePasswordAuthenticationToken(existingUser.getUsername(), request.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         String accessToken = jwtTokenProvider.generateToken(auth);
@@ -93,7 +108,7 @@ public class AuthServiceImpl {
         log.info("Registered new user: {} with role {}", user.getUsername(), roleName);
 
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsernameOrEmail(request.getUsername());
+        loginRequest.setEmail(request.getEmail());
         loginRequest.setPassword(request.getPassword());
         return login(loginRequest);
     }
