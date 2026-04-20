@@ -3,7 +3,6 @@ package com.disasterrelief.dto.response;
 import com.disasterrelief.entity.Volunteer;
 import lombok.Builder;
 import lombok.Data;
-import java.math.BigDecimal;
 
 @Data @Builder
 public class VolunteerResponse {
@@ -20,7 +19,7 @@ public class VolunteerResponse {
     private Double longitude;
     private String address;
     private Boolean isVerified;
-    private BigDecimal totalHours;
-    private BigDecimal rating;
+    private Double totalHours;
+    private Double rating;
     private Double distanceKm;
 }

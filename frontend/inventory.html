@@ -47,7 +47,7 @@
               <option value="EQUIPMENT">Equipment</option>
             </select>
           </div>
-          <button class="btn btn-primary" onclick="openAddModal()">+ Add Item</button>
+          <button class="btn btn-primary" id="add-item-btn" onclick="openAddModal()">+ Add Item</button>
         </div>
 
         <div class="card">
@@ -154,12 +154,15 @@
 
   <script type="module">
     import api from './js/api.js';
-    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { requireAuth, renderUserInfo, logout as authLogout, canManageOperations } from './js/auth.js';
     import { showToast, buildPagination } from './js/utils.js';
 
     window.logout = authLogout;
     requireAuth();
     renderUserInfo();
+    if (!canManageOperations()) {
+      document.getElementById('add-item-btn').style.display = 'none';
+    }
 
     let currentPage = 0;
     let editingId = null;
@@ -230,6 +233,10 @@
     };
 
     window.submitItem = async () => {
+      if (!canManageOperations()) {
+        showToast('Only Admin, Coordinator, or Volunteer can add inventory.', 'error');
+        return;
+      }
       const form = document.getElementById('add-form');
       const data = Object.fromEntries(new FormData(form));
       data.quantity     = parseInt(data.quantity);

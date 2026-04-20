@@ -2,7 +2,6 @@ package com.disasterrelief.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -50,13 +49,13 @@ public class Volunteer {
     @Builder.Default
     private Boolean isVerified = false;
 
-    @Column(name = "total_hours", precision = 8, scale = 2)
+    @Column(name = "total_hours")
     @Builder.Default
-    private BigDecimal totalHours = BigDecimal.ZERO;
+    private Double totalHours = 0.0;
 
-    @Column(precision = 3, scale = 2)
+    @Column
     @Builder.Default
-    private BigDecimal rating = BigDecimal.ZERO;
+    private Double rating = 0.0;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
