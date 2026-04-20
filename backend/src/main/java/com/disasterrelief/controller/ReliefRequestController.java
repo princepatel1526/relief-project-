@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/requests")
+@RequestMapping("/api/requests")
 @RequiredArgsConstructor
 public class ReliefRequestController {
 

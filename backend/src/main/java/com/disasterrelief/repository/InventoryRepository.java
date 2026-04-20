@@ -26,9 +26,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Query("SELECT i FROM Inventory i WHERE i.quantity <= i.minThreshold")
     List<Inventory> findLowStockItems();
 
-    @Query("SELECT i FROM Inventory i WHERE i.disaster.id = :disasterId AND i.category = :category")
-    List<Inventory> findByDisasterAndCategory(
-        @Param("disasterId") Long disasterId,
-        @Param("category") Inventory.InventoryCategory category
+    Page<Inventory> findByDisasterIdAndCategory(
+        Long disasterId,
+        Inventory.InventoryCategory category,
+        Pageable pageable
     );
 }

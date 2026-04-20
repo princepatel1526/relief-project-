@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/volunteers")
+@RequestMapping("/api/volunteers")
 @RequiredArgsConstructor
 public class VolunteerController {
 

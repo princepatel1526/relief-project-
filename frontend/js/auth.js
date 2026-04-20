@@ -1,5 +1,8 @@
 import api from './api.js';
-import { showToast } from './utils.js';
+
+// =============================================
+// SESSION HELPERS
+// =============================================
 
 export function getUser() {
   try {
@@ -33,95 +36,114 @@ export function saveSession(authResponse) {
   localStorage.setItem('accessToken', authResponse.accessToken);
   localStorage.setItem('refreshToken', authResponse.refreshToken);
   localStorage.setItem('user', JSON.stringify({
-    id: authResponse.userId,
+    id:       authResponse.userId,
     username: authResponse.username,
-    email: authResponse.email,
+    email:    authResponse.email,
     fullName: authResponse.fullName,
-    roles: authResponse.roles,
+    roles:    Array.isArray(authResponse.roles)
+                ? authResponse.roles
+                : Array.from(authResponse.roles ?? []),
   }));
 }
 
 export function renderUserInfo() {
   const user = getUser();
   if (!user) return;
-  const nameEl = document.getElementById('user-name');
-  const roleEl = document.getElementById('user-role');
+  const nameEl   = document.getElementById('user-name');
+  const roleEl   = document.getElementById('user-role');
   const avatarEl = document.getElementById('user-avatar');
-  if (nameEl) nameEl.textContent = user.fullName;
-  if (roleEl) roleEl.textContent = user.roles?.[0]?.replace('ROLE_', '') || '';
-  if (avatarEl) avatarEl.textContent = user.fullName.charAt(0).toUpperCase();
+  if (nameEl)   nameEl.textContent   = user.fullName;
+  if (roleEl)   roleEl.textContent   = user.roles?.[0]?.replace('ROLE_', '') || '';
+  if (avatarEl) avatarEl.textContent = user.fullName?.charAt(0).toUpperCase() || '?';
 }
 
-// Login page handler
+// =============================================
+// LOGIN PAGE
+// =============================================
+
 if (document.getElementById('login-form')) {
-  const form = document.getElementById('login-form');
+  const form     = document.getElementById('login-form');
+  const errorDiv = document.getElementById('login-error');
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('[type="submit"]');
-    btn.disabled = true;
-    btn.textContent = 'Signing in...';
+    btn.disabled    = true;
+    btn.textContent = 'Signing in…';
+    errorDiv.classList.add('hidden');
+    errorDiv.textContent = '';
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: form.usernameOrEmail.value,
-          password: form.password.value,
-        }),
+      // Send as 'email' — backend principal() checks email first then username,
+      // so typing either "admin" or "admin@example.com" works.
+      const data = await api.auth.login({
+        email:    form.usernameOrEmail.value.trim(),
+        password: form.password.value,
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.message || 'Login failed');
-      }
       saveSession(data);
-      window.location.href = '/admin-dashboard.html';
+
+      // Redirect based on role
+      const roles = data.roles ?? [];
+      const isAdminOrCoord = roles.some(r =>
+        r === 'ROLE_ADMIN' || r === 'ROLE_COORDINATOR'
+      );
+      window.location.href = isAdminOrCoord
+        ? '/admin-dashboard.html'
+        : '/admin-dashboard.html'; // all roles go to dashboard for now
+
     } catch (err) {
-      document.getElementById('login-error').textContent = err.message;
-      document.getElementById('login-error').classList.remove('hidden');
+      errorDiv.textContent = err.message || 'Login failed. Check your credentials.';
+      errorDiv.classList.remove('hidden');
     } finally {
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = 'Sign In';
     }
   });
 }
 
-// Register page handler
+// =============================================
+// REGISTER PAGE
+// =============================================
+
 if (document.getElementById('register-form')) {
-  const form = document.getElementById('register-form');
+  const form     = document.getElementById('register-form');
+  const errorDiv = document.getElementById('register-error');
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('[type="submit"]');
-    btn.disabled = true;
-    btn.textContent = 'Creating account...';
+    btn.disabled    = true;
+    btn.textContent = 'Creating account…';
+    errorDiv.classList.add('hidden');
+    errorDiv.textContent = '';
 
     if (form.password.value !== form.confirmPassword.value) {
-      document.getElementById('register-error').textContent = 'Passwords do not match';
-      document.getElementById('register-error').classList.remove('hidden');
-      btn.disabled = false;
+      errorDiv.textContent = 'Passwords do not match.';
+      errorDiv.classList.remove('hidden');
+      btn.disabled    = false;
       btn.textContent = 'Create Account';
       return;
     }
 
     try {
       const data = await api.auth.register({
-        username: form.username.value,
-        email: form.email.value,
+        username: form.username.value.trim(),
+        email:    form.email.value.trim(),
         password: form.password.value,
-        fullName: form.fullName.value,
-        phone: form.phone.value,
-        role: form.role.value,
+        fullName: form.fullName.value.trim(),
+        phone:    form.phone.value.trim(),
+        role:     form.role.value,
       });
+
       saveSession(data);
       window.location.href = '/admin-dashboard.html';
+
     } catch (err) {
-      document.getElementById('register-error').textContent = err.message;
-      document.getElementById('register-error').classList.remove('hidden');
+      errorDiv.textContent = err.message || 'Registration failed. Please try again.';
+      errorDiv.classList.remove('hidden');
     } finally {
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = 'Create Account';
     }
   });

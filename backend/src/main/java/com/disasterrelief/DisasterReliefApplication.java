@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableScheduling
 @EnableTransactionManagement
 public class DisasterReliefApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(DisasterReliefApplication.class, args);
     }

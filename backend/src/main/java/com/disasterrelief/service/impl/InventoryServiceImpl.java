@@ -32,11 +32,16 @@ public class InventoryServiceImpl {
     private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
+    public InventoryResponse getItemById(Long id) {
+        return toResponse(inventoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory", "id", id)));
+    }
+
+    @Transactional(readOnly = true)
     public Page<InventoryResponse> getAllInventory(Long disasterId, Inventory.InventoryCategory category, Pageable pageable) {
         Page<Inventory> items;
         if (disasterId != null && category != null) {
-            items = (Page<Inventory>) inventoryRepository.findByDisasterAndCategory(disasterId, category);
-            items = inventoryRepository.findByDisasterId(disasterId, pageable);
+            items = inventoryRepository.findByDisasterIdAndCategory(disasterId, category, pageable);
         } else if (disasterId != null) {
             items = inventoryRepository.findByDisasterId(disasterId, pageable);
         } else if (category != null) {
