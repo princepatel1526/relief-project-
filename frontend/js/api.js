@@ -142,6 +142,15 @@ const api = {
     all:     (params) => api.get('/disasters', { size: 200, page: 0, ...params }),
     nearby:  (lat, lng, radiusKm = 100) => api.get('/disasters/nearby', { lat, lng, radiusKm }),
   },
+
+  // News / Live incident feed
+  news: {
+    list:    (params) => api.get('/news', params),
+    get:     (id) => api.get(`/news/${id}`),
+    create:  (body) => api.post('/news', body),
+    update:  (id, body) => api.put(`/news/${id}`, body),
+    delete:  (id) => api.delete(`/news/${id}`),
+  },
 };
 
 export default api;

@@ -57,6 +57,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/payments/webhook").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/disasters/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/disaster-types/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/news", "/api/news/**").permitAll()
                 .requestMatchers("/api/actuator/health", "/actuator/health").permitAll()
 
                 // ── Current-user profile (any authenticated role) ─────────────

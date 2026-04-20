@@ -407,6 +407,93 @@ WHERE u.username = 'admin'
   AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.user_id = u.id AND n.title = 'Donation Received' AND n.reference_id = dn.id);
 
 -- =============================================
+-- NEWS FEED
+-- =============================================
+INSERT INTO news_updates (title, summary, content, image_url, disaster_type, severity, status, location, latitude, longitude, source_incident_id, created_by, created_at, updated_at)
+SELECT
+  'Kurla Flooding Intensifies: Evacuation Extended Overnight',
+  'Rescue corridors were expanded in Kurla and Sion as flood levels remained high through the night.',
+  'Command teams confirmed additional boats and medical units were dispatched to low-lying pockets. Shelters at Sion and Dharavi have been expanded with food and water support. Authorities continue to monitor storm drains and transport disruptions.',
+  'https://images.unsplash.com/photo-1454789548928-9efd52dc4031?auto=format&fit=crop&w=1400&q=80',
+  'Flood',
+  'CRITICAL',
+  'ACTIVE',
+  'Kurla, Mumbai',
+  19.0735,
+  72.8790,
+  d.id,
+  u.id,
+  DATE_SUB(@now, INTERVAL 23 DAY),
+  DATE_SUB(@now, INTERVAL 2 HOUR)
+FROM disasters d, users u
+WHERE d.title = 'Mumbai Monsoon Flooding - Kurla Cluster' AND u.username = 'ops_lead_mumbai'
+  AND NOT EXISTS (SELECT 1 FROM news_updates n WHERE n.title = 'Kurla Flooding Intensifies: Evacuation Extended Overnight');
+
+INSERT INTO news_updates (title, summary, content, image_url, disaster_type, severity, status, location, latitude, longitude, source_incident_id, created_by, created_at, updated_at)
+SELECT
+  'Chennai Cyclone Surge: Coastal Shelters Stable',
+  'Shelter occupancy remains controlled as coastal teams continue monitoring wind and rainfall spikes.',
+  'The operations desk reports stable occupancy across Velachery and nearby shelters. Medical response teams are on standby while utility crews restore localized outages. Public advisories remain active for vulnerable wards.',
+  'https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=1400&q=80',
+  'Cyclone',
+  'HIGH',
+  'MONITORING',
+  'Marina Belt, Chennai',
+  13.0352,
+  80.2824,
+  d.id,
+  u.id,
+  DATE_SUB(@now, INTERVAL 13 DAY),
+  DATE_SUB(@now, INTERVAL 6 HOUR)
+FROM disasters d, users u
+WHERE d.title = 'Chennai Cyclone Surge - Marina Belt' AND u.username = 'ops_lead_chennai'
+  AND NOT EXISTS (SELECT 1 FROM news_updates n WHERE n.title = 'Chennai Cyclone Surge: Coastal Shelters Stable');
+
+INSERT INTO news_updates (title, summary, content, image_url, disaster_type, severity, status, location, latitude, longitude, source_incident_id, created_by, created_at, updated_at)
+SELECT
+  'Navi Mumbai Heatwave Response Closed',
+  'Heatwave response operations have been closed after sustained temperature normalization.',
+  'District teams confirmed that emergency medical demand has returned to baseline and cooling center operations were formally closed. Post-incident monitoring will continue for the next 72 hours.',
+  'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1400&q=80',
+  'Heatwave',
+  'MEDIUM',
+  'RESOLVED',
+  'Nerul, Navi Mumbai',
+  19.0330,
+  73.0297,
+  d.id,
+  u.id,
+  DATE_SUB(@now, INTERVAL 33 DAY),
+  DATE_SUB(@now, INTERVAL 12 DAY)
+FROM disasters d, users u
+WHERE d.title = 'Navi Mumbai Heatwave Impact' AND u.username = 'admin'
+  AND NOT EXISTS (SELECT 1 FROM news_updates n WHERE n.title = 'Navi Mumbai Heatwave Response Closed');
+
+INSERT INTO news_timeline_updates (news_id, update_text, update_timestamp)
+SELECT n.id, 'First public advisory issued to nearby wards.', DATE_SUB(@now, INTERVAL 22 DAY)
+FROM news_updates n
+WHERE n.title = 'Kurla Flooding Intensifies: Evacuation Extended Overnight'
+  AND NOT EXISTS (SELECT 1 FROM news_timeline_updates t WHERE t.news_id = n.id);
+
+INSERT INTO news_timeline_updates (news_id, update_text, update_timestamp)
+SELECT n.id, 'Additional evacuation boats deployed to affected corridors.', DATE_SUB(@now, INTERVAL 18 DAY)
+FROM news_updates n
+WHERE n.title = 'Kurla Flooding Intensifies: Evacuation Extended Overnight'
+  AND NOT EXISTS (SELECT 1 FROM news_timeline_updates t WHERE t.news_id = n.id AND t.update_text LIKE 'Additional evacuation boats%');
+
+INSERT INTO news_timeline_updates (news_id, update_text, update_timestamp)
+SELECT n.id, 'Shelter occupancy reviewed; medical readiness maintained.', DATE_SUB(@now, INTERVAL 10 DAY)
+FROM news_updates n
+WHERE n.title = 'Chennai Cyclone Surge: Coastal Shelters Stable'
+  AND NOT EXISTS (SELECT 1 FROM news_timeline_updates t WHERE t.news_id = n.id);
+
+INSERT INTO news_timeline_updates (news_id, update_text, update_timestamp)
+SELECT n.id, 'Heatwave response formally closed and transitioned to monitoring.', DATE_SUB(@now, INTERVAL 12 DAY)
+FROM news_updates n
+WHERE n.title = 'Navi Mumbai Heatwave Response Closed'
+  AND NOT EXISTS (SELECT 1 FROM news_timeline_updates t WHERE t.news_id = n.id);
+
+-- =============================================
 -- AUDIT LOGS
 -- =============================================
 INSERT INTO audit_logs (user_id, action, entity_type, entity_id, old_value, new_value, ip_address, user_agent, created_at)

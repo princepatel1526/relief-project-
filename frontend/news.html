@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News / Live Updates | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script defer src="js/icons-init.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><i data-lucide="shield-alert"></i></div>
+        <div><h1>Relief Platform</h1><span>Emergency Coordination</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-label">Overview</div>
+          <a href="admin-dashboard.html" class="nav-link"><span class="icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+          <a href="news.html" class="nav-link active"><span class="icon"><i data-lucide="newspaper"></i></span> News / Live Updates</a>
+          <a href="map.html" class="nav-link"><span class="icon"><i data-lucide="map"></i></span> Live Map</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-label">Operations</div>
+          <a href="disasters.html" class="nav-link"><span class="icon"><i data-lucide="cloud-lightning"></i></span> Disasters</a>
+          <a href="relief-requests.html" class="nav-link"><span class="icon"><i data-lucide="siren"></i></span> Relief Requests</a>
+          <a href="donations.html" class="nav-link"><span class="icon"><i data-lucide="hand-coins"></i></span> Donations</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="btn btn-outline" style="width:100%; font-size:13px;"><i data-lucide="log-out"></i> Logout</button>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title">News / Live Incident Feed</h2>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" id="publish-btn" style="display:none"><i data-lucide="plus"></i> Publish Update</button>
+          <div class="user-menu">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div>
+              <div class="user-name" id="user-name">Guest User</div>
+              <div class="user-role" id="user-role">Public</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <section class="news-hero">
+          <h1>Current Disaster Intelligence / Live Updates</h1>
+          <p>Operationally verified incident updates, severity classification, field timeline notes, and location signals for public awareness and response coordination.</p>
+        </section>
+
+        <div class="news-toolbar">
+          <input id="news-search" class="form-control" placeholder="Search updates, location, keywords...">
+          <div class="news-filters" id="news-filters">
+            <button class="news-filter-chip active" data-filter="ACTIVE_FIRST">Active First</button>
+            <button class="news-filter-chip" data-filter="LATEST">Latest</button>
+            <button class="news-filter-chip" data-filter="CRITICAL">Critical</button>
+            <button class="news-filter-chip" data-filter="Flood">Flood</button>
+            <button class="news-filter-chip" data-filter="Fire">Fire</button>
+            <button class="news-filter-chip" data-filter="Landslide">Landslide</button>
+            <button class="news-filter-chip" data-filter="Medical">Medical</button>
+          </div>
+        </div>
+
+        <div id="news-grid" class="news-grid"></div>
+        <div id="news-pagination" class="pagination" style="margin-top: 14px;"></div>
+      </main>
+    </div>
+  </div>
+
+  <div id="news-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width:760px;width:94%">
+      <div class="modal-header"><h3>Publish News Update</h3></div>
+      <div class="modal-body" style="display:grid;gap:10px">
+        <input id="n-title" class="form-control" placeholder="Title">
+        <input id="n-summary" class="form-control" placeholder="Summary">
+        <textarea id="n-content" class="form-control" rows="5" placeholder="Full content"></textarea>
+        <input id="n-image" class="form-control" placeholder="Image URL">
+        <div class="form-grid">
+          <input id="n-type" class="form-control" placeholder="Disaster Type (Flood, Fire, etc)">
+          <input id="n-location" class="form-control" placeholder="Location">
+        </div>
+        <div class="form-grid">
+          <select id="n-severity" class="form-control"><option>LOW</option><option selected>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select>
+          <select id="n-status" class="form-control"><option selected>ACTIVE</option><option>MONITORING</option><option>RESOLVED</option></select>
+        </div>
+        <div class="form-grid">
+          <input id="n-lat" class="form-control" placeholder="Latitude">
+          <input id="n-lng" class="form-control" placeholder="Longitude">
+        </div>
+        <textarea id="n-timeline" class="form-control" rows="3" placeholder="Timeline updates (one per line)"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeNewsModal()">Cancel</button>
+        <button class="btn btn-primary" id="save-news-btn">Publish</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { getUser, hasRole, isLoggedIn, logout as authLogout, renderUserInfo } from './js/auth.js';
+    import { showToast, statusBadge, severityBadge, buildPagination, formatDate } from './js/utils.js';
+    import './js/profile.js';
+
+    window.logout = authLogout;
+    if (isLoggedIn()) renderUserInfo();
+
+    const privileged = hasRole('ADMIN') || hasRole('SUPER_ADMIN') || hasRole('NGO_COORDINATOR');
+    if (privileged) document.getElementById('publish-btn').style.display = 'inline-flex';
+    if (!isLoggedIn()) {
+      document.getElementById('user-name').textContent = 'Public Viewer';
+      document.getElementById('user-role').textContent = 'Read-only';
+      document.getElementById('user-avatar').textContent = 'P';
+    }
+
+    let state = { filter: 'ACTIVE_FIRST', q: '', page: 0 };
+
+    const filterToParams = () => {
+      if (state.filter === 'CRITICAL') return { severity: 'CRITICAL' };
+      if (state.filter === 'LATEST') return {};
+      if (state.filter === 'ACTIVE_FIRST') return { status: 'ACTIVE' };
+      if (['Flood', 'Fire', 'Landslide', 'Medical'].includes(state.filter)) return { disasterType: state.filter };
+      return {};
+    };
+
+    async function loadNews(page = 0) {
+      state.page = page;
+      const grid = document.getElementById('news-grid');
+      grid.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+      try {
+        const params = { ...filterToParams(), q: state.q || null, page, size: 12 };
+        const data = await api.news.list(params);
+        if (!data.content?.length) {
+          grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon"><i data-lucide="newspaper"></i></div><h3>No updates found</h3><p>Try another filter or keyword.</p></div>`;
+          if (window.lucide) window.lucide.createIcons();
+          buildPagination(document.getElementById('news-pagination'), 0, 0, loadNews);
+          return;
+        }
+
+        const cards = data.content.slice();
+        if (state.filter === 'ACTIVE_FIRST') {
+          cards.sort((a, b) => (a.status === 'ACTIVE' ? -1 : 1) - (b.status === 'ACTIVE' ? -1 : 1));
+        }
+        grid.innerHTML = cards.map(n => `
+          <article class="news-card">
+            <img src="${n.imageUrl || 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80'}" alt="${n.title}">
+            <div class="news-card-body">
+              <div class="news-meta">${severityBadge(n.severity)} ${statusBadge(n.status)}</div>
+              <div class="news-title">${n.title}</div>
+              <p class="news-summary">${n.summary}</p>
+              <div class="news-footer">
+                <span class="news-location"><i data-lucide="map-pin"></i>${n.location || 'Unknown Location'}</span>
+                <span>${formatDate(n.createdAt)}</span>
+              </div>
+              <a class="btn btn-outline btn-sm" href="news-detail.html?id=${n.id}">Read More</a>
+            </div>
+          </article>
+        `).join('');
+
+        if (window.lucide) window.lucide.createIcons();
+        buildPagination(document.getElementById('news-pagination'), data.number, data.totalPages, loadNews);
+      } catch (e) {
+        grid.innerHTML = `<div class="alert alert-danger" style="grid-column:1/-1">${e.message}</div>`;
+      }
+    }
+
+    document.getElementById('news-search').addEventListener('input', (e) => {
+      state.q = e.target.value.trim();
+      loadNews(0);
+    });
+
+    document.querySelectorAll('#news-filters .news-filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#news-filters .news-filter-chip').forEach(x => x.classList.remove('active'));
+        btn.classList.add('active');
+        state.filter = btn.dataset.filter;
+        loadNews(0);
+      });
+    });
+
+    document.getElementById('publish-btn').addEventListener('click', () => {
+      document.getElementById('news-modal').classList.remove('hidden');
+    });
+    window.closeNewsModal = () => document.getElementById('news-modal').classList.add('hidden');
+
+    document.getElementById('save-news-btn').addEventListener('click', async () => {
+      try {
+        const body = {
+          title: document.getElementById('n-title').value.trim(),
+          summary: document.getElementById('n-summary').value.trim(),
+          content: document.getElementById('n-content').value.trim(),
+          imageUrl: document.getElementById('n-image').value.trim(),
+          disasterType: document.getElementById('n-type').value.trim(),
+          location: document.getElementById('n-location').value.trim(),
+          severity: document.getElementById('n-severity').value,
+          status: document.getElementById('n-status').value,
+          latitude: document.getElementById('n-lat').value ? Number(document.getElementById('n-lat').value) : null,
+          longitude: document.getElementById('n-lng').value ? Number(document.getElementById('n-lng').value) : null,
+          timelineUpdates: document.getElementById('n-timeline').value.split('\n').map(x => x.trim()).filter(Boolean),
+        };
+        await api.news.create(body);
+        showToast('News update published.', 'success');
+        closeNewsModal();
+        loadNews(0);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    });
+
+    loadNews(0);
+  </script>
+</body>
+</html>

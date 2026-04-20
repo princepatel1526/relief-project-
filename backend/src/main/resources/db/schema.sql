@@ -319,3 +319,42 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     INDEX idx_audit_entity (entity_type, entity_id),
     INDEX idx_audit_created (created_at DESC)
 ) ENGINE=InnoDB;
+
+-- =============================================
+-- NEWS UPDATES
+-- =============================================
+CREATE TABLE IF NOT EXISTS news_updates (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title               VARCHAR(220) NOT NULL,
+    summary             VARCHAR(400) NOT NULL,
+    content             TEXT NOT NULL,
+    image_url           VARCHAR(500),
+    disaster_type       VARCHAR(100),
+    severity            ENUM('LOW','MEDIUM','HIGH','CRITICAL') NOT NULL DEFAULT 'MEDIUM',
+    status              ENUM('ACTIVE','RESOLVED','MONITORING') NOT NULL DEFAULT 'MONITORING',
+    location            VARCHAR(200),
+    latitude            DOUBLE,
+    longitude           DOUBLE,
+    source_incident_id  BIGINT,
+    created_by          BIGINT,
+    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_news_status (status),
+    INDEX idx_news_severity (severity),
+    INDEX idx_news_created (created_at DESC),
+    INDEX idx_news_source_incident (source_incident_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- NEWS TIMELINE UPDATES
+-- =============================================
+CREATE TABLE IF NOT EXISTS news_timeline_updates (
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    news_id           BIGINT NOT NULL,
+    update_text       TEXT NOT NULL,
+    update_timestamp  DATETIME NOT NULL,
+    FOREIGN KEY (news_id) REFERENCES news_updates(id) ON DELETE CASCADE,
+    INDEX idx_news_timeline_news (news_id),
+    INDEX idx_news_timeline_time (update_timestamp DESC)
+) ENGINE=InnoDB;

@@ -129,6 +129,16 @@ PATCH  /api/disasters/{id}/status  — Update status
 GET    /api/disasters/nearby       — Geo-query (?lat=&lng=&radiusKm=)
 ```
 
+### News / Live Updates
+```
+GET    /api/news                   — Public feed (supports status/severity/disasterType/q)
+GET    /api/news/{id}              — Public detail
+GET    /api/news/search?q=...      — Public keyword search
+POST   /api/news                   — Publish (ADMIN/SUPER_ADMIN/NGO_COORDINATOR)
+PUT    /api/news/{id}              — Edit (ADMIN/SUPER_ADMIN/NGO_COORDINATOR)
+DELETE /api/news/{id}              — Remove (ADMIN/SUPER_ADMIN/NGO_COORDINATOR)
+```
+
 ### Payments (Razorpay)
 ```
 POST /api/payments/create-order    — Create Razorpay order

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Detail | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script defer src="js/icons-init.js"></script>
+</head>
+<body>
+  <div class="main-content" style="margin-left:0;min-height:100vh">
+    <header class="topbar">
+      <h2 class="topbar-title">Live Incident Detail</h2>
+      <div class="topbar-actions">
+        <a class="btn btn-outline" href="news.html"><i data-lucide="arrow-left"></i> Back to News</a>
+      </div>
+    </header>
+    <main class="page-content">
+      <div id="news-detail" class="news-detail-wrap"></div>
+    </main>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { severityBadge, statusBadge, formatDate } from './js/utils.js';
+
+    const id = new URLSearchParams(location.search).get('id');
+    const wrap = document.getElementById('news-detail');
+
+    function progressFromStatus(status) {
+      if (status === 'RESOLVED') return 100;
+      if (status === 'ACTIVE') return 65;
+      return 35;
+    }
+
+    async function loadDetail() {
+      if (!id) {
+        wrap.innerHTML = '<div class="alert alert-danger">Missing news ID.</div>';
+        return;
+      }
+      wrap.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+      try {
+        const n = await api.news.get(id);
+        const progress = progressFromStatus(n.status);
+        wrap.innerHTML = `
+          <img class="news-detail-image" src="${n.imageUrl || 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1400&q=80'}" alt="${n.title}">
+          <section class="news-detail-card">
+            <div class="news-meta">${severityBadge(n.severity)} ${statusBadge(n.status)} <span class="badge badge-info">${n.disasterType || 'General'}</span></div>
+            <h1 style="margin:10px 0 8px;line-height:1.25">${n.title}</h1>
+            <p style="color:var(--text-muted);margin:0 0 14px">${n.summary}</p>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;color:var(--text-muted);font-size:13px;margin-bottom:12px">
+              <span><i data-lucide="map-pin"></i> ${n.location || 'Unknown Location'}</span>
+              <span><i data-lucide="clock-3"></i> ${formatDate(n.createdAt)}</span>
+              <span><i data-lucide="user"></i> ${n.createdByName || 'Operations Desk'}</span>
+            </div>
+            <div style="white-space:pre-line;line-height:1.7">${n.content}</div>
+          </section>
+
+          <section class="news-detail-card">
+            <h3>Response Progress</h3>
+            <div class="news-progress"><span style="width:${progress}%"></span></div>
+            <p style="margin-top:8px;color:var(--text-muted)">Current progress estimate: <strong>${progress}%</strong></p>
+          </section>
+
+          <section class="news-detail-card">
+            <h3>Timeline Updates</h3>
+            <div class="news-timeline">
+              ${(n.timelineUpdates?.length ? n.timelineUpdates : [{ updateText: 'No timeline updates have been posted yet.', timestamp: n.createdAt }])
+                .map(t => `<div class="news-timeline-item"><div style="font-size:13px;color:var(--text-muted)">${formatDate(t.timestamp)}</div><div>${t.updateText}</div></div>`).join('')}
+            </div>
+          </section>
+
+          <section class="news-detail-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div>
+              <h3 style="margin:0 0 6px">Support the Relief Response</h3>
+              <p style="margin:0;color:var(--text-muted)">Contribute supplies or funds to accelerate field response.</p>
+            </div>
+            <a class="btn btn-primary" href="donations.html"><i data-lucide="hand-coins"></i> Donate Now</a>
+          </section>
+
+          ${n.latitude && n.longitude ? `
+            <section class="news-detail-card">
+              <h3>Incident Map Location</h3>
+              <iframe title="incident-map" width="100%" height="320" style="border:0;border-radius:10px" loading="lazy"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=${n.longitude-0.06}%2C${n.latitude-0.04}%2C${n.longitude+0.06}%2C${n.latitude+0.04}&layer=mapnik&marker=${n.latitude}%2C${n.longitude}"></iframe>
+            </section>
+          ` : ''}
+        `;
+        if (window.lucide) window.lucide.createIcons();
+      } catch (e) {
+        wrap.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+      }
+    }
+
+    loadDetail();
+  </script>
+</body>
+</html>

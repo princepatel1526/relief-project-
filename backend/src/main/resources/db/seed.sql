@@ -102,3 +102,28 @@ INSERT IGNORE INTO inventory (item_name, category, quantity, unit, location_id, 
 ('Bread Loaves',           'FOOD',     200,  'loaves',  3, 2, 20),
 ('Drinking Water (5L)',    'WATER',    300,  'cans',    3, 2, 30),
 ('Sleeping Bags',          'SHELTER',  80,   'pieces',  4, 2, 10);
+
+-- =============================================
+-- SEED NEWS FEED
+-- =============================================
+INSERT INTO news_updates (title, summary, content, image_url, disaster_type, severity, status, location, latitude, longitude, source_incident_id, created_by)
+SELECT
+  'Mumbai Coastal Flooding: Evacuation Corridors Open',
+  'Response teams opened high-ground evacuation corridors and expanded shelter capacity in Mumbai coastal zones.',
+  'Emergency teams have deployed boats and medical units across high-impact wards. Supply routes remain open and water levels are being monitored hourly. Citizens are advised to follow official alerts and avoid submerged roads.',
+  'https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=1400&q=80',
+  'Flood',
+  'CRITICAL',
+  'ACTIVE',
+  'Mumbai, Maharashtra',
+  19.0760,
+  72.8777,
+  1,
+  1
+WHERE NOT EXISTS (SELECT 1 FROM news_updates WHERE title = 'Mumbai Coastal Flooding: Evacuation Corridors Open');
+
+INSERT INTO news_timeline_updates (news_id, update_text, update_timestamp)
+SELECT n.id, 'Initial emergency bulletin released; shelters activated.', DATE_SUB(NOW(), INTERVAL 6 HOUR)
+FROM news_updates n
+WHERE n.title = 'Mumbai Coastal Flooding: Evacuation Corridors Open'
+  AND NOT EXISTS (SELECT 1 FROM news_timeline_updates t WHERE t.news_id = n.id);

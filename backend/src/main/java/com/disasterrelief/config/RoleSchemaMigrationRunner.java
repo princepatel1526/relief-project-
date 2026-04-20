@@ -23,11 +23,12 @@ public class RoleSchemaMigrationRunner implements CommandLineRunner {
     public void run(String... args) {
         try {
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
-                new ClassPathResource("db/migration/V20260420_01__roles_name_to_varchar_and_standardize.sql")
+                new ClassPathResource("db/migration/V20260420_01__roles_name_to_varchar_and_standardize.sql"),
+                new ClassPathResource("db/migration/V20260420_02__create_news_feed_tables.sql")
             );
             populator.setContinueOnError(true);
             populator.execute(dataSource);
-            log.info("Applied role schema migration: roles.name -> VARCHAR(80) and standardized role set");
+            log.info("Applied startup migrations for role standardization and news feed schema");
         } catch (Exception ex) {
             log.warn("Role schema migration skipped: {}", ex.getMessage());
         }

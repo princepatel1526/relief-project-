@@ -77,6 +77,22 @@ WHERE i.item_name IN (
 
 DELETE FROM payments WHERE payment_order_id IN ('order_demo_2026_001', 'order_demo_2026_002', 'order_demo_2026_003');
 
+DELETE nt
+FROM news_timeline_updates nt
+JOIN news_updates n ON n.id = nt.news_id
+WHERE n.title IN (
+  'Kurla Flooding Intensifies: Evacuation Extended Overnight',
+  'Chennai Cyclone Surge: Coastal Shelters Stable',
+  'Navi Mumbai Heatwave Response Closed'
+);
+
+DELETE FROM news_updates
+WHERE title IN (
+  'Kurla Flooding Intensifies: Evacuation Extended Overnight',
+  'Chennai Cyclone Surge: Coastal Shelters Stable',
+  'Navi Mumbai Heatwave Response Closed'
+);
+
 DELETE FROM disasters
 WHERE title IN (
   'Mumbai Monsoon Flooding - Kurla Cluster',
