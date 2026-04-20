@@ -5,33 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventory | Disaster Relief Platform</title>
   <link rel="stylesheet" href="css/main.css">
+  <script defer src="js/icons-init.js"></script>
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1></div></div>
+      <div class="sidebar-logo"><div class="logo-icon"><i data-lucide="shield-alert"></i></div><div><h1>Relief Platform</h1></div></div>
       <nav class="sidebar-nav">
         <div class="nav-section">
           <div class="nav-section-label">Overview</div>
-          <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
-          <a href="analytics.html" class="nav-link"><span class="icon">📈</span> Analytics</a>
-          <a href="map.html" class="nav-link"><span class="icon">🗺️</span> Live Map</a>
+          <a href="admin-dashboard.html" class="nav-link"><span class="icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+          <a href="analytics.html" class="nav-link"><span class="icon"><i data-lucide="line-chart"></i></span> Analytics</a>
+          <a href="map.html" class="nav-link"><span class="icon"><i data-lucide="map"></i></span> Live Map</a>
         </div>
         <div class="nav-section">
           <div class="nav-section-label">Operations</div>
-          <a href="incident-report.html" class="nav-link"><span class="icon">📝</span> Report Incident</a>
-          <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
-          <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
-          <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+          <a href="incident-report.html" class="nav-link"><span class="icon"><i data-lucide="file-pen-line"></i></span> Report Incident</a>
+          <a href="disasters.html" class="nav-link"><span class="icon"><i data-lucide="cloud-lightning"></i></span> Disasters</a>
+          <a href="relief-requests.html" class="nav-link"><span class="icon"><i data-lucide="siren"></i></span> Relief Requests</a>
+          <a href="assignments.html" class="nav-link"><span class="icon"><i data-lucide="users"></i></span> Assignments</a>
         </div>
         <div class="nav-section">
           <div class="nav-section-label">Resources</div>
-          <a href="inventory.html" class="nav-link active"><span class="icon">📦</span> Inventory</a>
-          <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
-          <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+          <a href="inventory.html" class="nav-link active"><span class="icon"><i data-lucide="package"></i></span> Inventory</a>
+          <a href="volunteers.html" class="nav-link"><span class="icon"><i data-lucide="user-check"></i></span> Volunteers</a>
+          <a href="donations.html" class="nav-link"><span class="icon"><i data-lucide="hand-coins"></i></span> Donations</a>
         </div>
       </nav>
-      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;"><i data-lucide="log-out"></i> Logout</button></div>
     </aside>
 
     <div class="main-content">
@@ -45,7 +46,7 @@
       <main class="page-content">
         <!-- Low Stock Alert Bar -->
         <div id="low-stock-bar" class="alert alert-warning" style="display:none">
-          ⚠️ <span id="low-stock-count">0</span> items are running low on stock. <a href="#" onclick="filterLowStock()">View low stock items</a>
+          <i data-lucide="triangle-alert"></i> <span id="low-stock-count">0</span> items are running low on stock. <a href="#" onclick="filterLowStock()">View low stock items</a>
         </div>
 
         <div class="page-header">
@@ -85,7 +86,7 @@
   <!-- Add Item Modal -->
   <div class="modal-overlay hidden" id="add-modal">
     <div class="modal">
-      <div class="modal-header"><h3>📦 Add Inventory Item</h3><button class="btn-close" onclick="closeAddModal()">✕</button></div>
+      <div class="modal-header"><h3>Add Inventory Item</h3><button class="btn-close" onclick="closeAddModal()"><i data-lucide="x"></i></button></div>
       <div class="modal-body">
         <form id="add-form">
           <div class="form-group">
@@ -136,7 +137,7 @@
   <!-- Update Quantity Modal -->
   <div class="modal-overlay hidden" id="qty-modal">
     <div class="modal" style="max-width:380px">
-      <div class="modal-header"><h3>📝 Update Quantity</h3><button class="btn-close" onclick="closeQtyModal()">✕</button></div>
+      <div class="modal-header"><h3>Update Quantity</h3><button class="btn-close" onclick="closeQtyModal()"><i data-lucide="x"></i></button></div>
       <div class="modal-body">
         <p id="qty-item-name" style="font-weight:600; margin-bottom:16px;"></p>
         <div class="form-group">
@@ -195,14 +196,14 @@
         const { content, totalPages } = data;
 
         if (!content?.length) {
-          tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">📦</div><h3>No items found</h3></div></td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon"><i data-lucide="package"></i></div><h3>No items found</h3></div></td></tr>`;
         } else {
           tbody.innerHTML = content.map(i => `
             <tr>
               <td><strong>${i.itemName}</strong></td>
               <td><span class="badge badge-info">${i.category}</span></td>
               <td style="${i.lowStock ? 'color:var(--danger);font-weight:700' : ''}">
-                ${i.quantity} ${i.lowStock ? '⚠️' : ''}
+                ${i.quantity} ${i.lowStock ? '(Low)' : ''}
               </td>
               <td>${i.unit}</td>
               <td>${i.locationName || '-'}</td>
@@ -213,7 +214,7 @@
               <td>
                 ${canWrite ? `<div style="display:flex;gap:6px">
                   <button class="btn btn-sm btn-secondary" onclick="openQtyModal(${i.id}, '${i.itemName}')">±Qty</button>
-                  <button class="btn btn-sm btn-outline" onclick="deleteItem(${i.id}, '${i.itemName}')">🗑</button>
+                  <button class="btn btn-sm btn-outline" onclick="deleteItem(${i.id}, '${i.itemName}')">Delete</button>
                 </div>` : '<span style="color:var(--text-muted);font-size:12px">View only</span>'}
               </td>
             </tr>`).join('');

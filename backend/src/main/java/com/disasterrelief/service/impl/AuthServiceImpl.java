@@ -121,6 +121,7 @@ public class AuthServiceImpl {
             case "COORDINATOR" -> Role.RoleName.ROLE_COORDINATOR;
             case "DONOR"       -> Role.RoleName.ROLE_DONOR;
             case "RESPONDER"   -> Role.RoleName.ROLE_RESPONDER;
+            case "NGO_COORDINATOR", "NGO-COORDINATOR" -> Role.RoleName.ROLE_NGO_COORDINATOR;
             case "NGO"         -> Role.RoleName.ROLE_NGO;
             case "CITIZEN"     -> Role.RoleName.ROLE_CITIZEN;
             default            -> Role.RoleName.ROLE_VOLUNTEER;

@@ -64,29 +64,29 @@ public class SecurityConfig {
 
                 // ── Role-protected API endpoints ──────────────────────────────
                 .requestMatchers("/api/users", "/api/users/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "SUPER_ADMIN")
                 .requestMatchers("/api/admin/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "SUPER_ADMIN", "NGO_COORDINATOR")
                 // Citizens can submit relief requests and view disasters
                 .requestMatchers(HttpMethod.POST, "/api/requests")
-                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "CITIZEN", "RESPONDER", "NGO")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "CITIZEN", "RESPONDER", "NGO", "NGO_COORDINATOR")
                 // Volunteers, Coordinators, Admins, Responders, NGOs can report/update disasters — Donors/Citizens cannot
                 .requestMatchers(HttpMethod.POST,   "/api/disasters/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO", "NGO_COORDINATOR")
                 .requestMatchers(HttpMethod.PUT,    "/api/disasters/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO", "NGO_COORDINATOR")
                 .requestMatchers(HttpMethod.PATCH,  "/api/disasters/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO", "NGO_COORDINATOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/disasters/**")
                     .hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/assignments/**")
-                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO_COORDINATOR")
                 // Volunteers, Coordinators, Admins, Responders can manage inventory — Donors/Citizens cannot
                 .requestMatchers("/api/inventory/**")
-                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO_COORDINATOR")
                 // Analytics — coordinators and above
                 .requestMatchers("/api/admin/analytics")
-                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR", "NGO")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR", "NGO", "NGO_COORDINATOR")
 
                 // ── Everything else requires login ────────────────────────────
                 .anyRequest().authenticated()
