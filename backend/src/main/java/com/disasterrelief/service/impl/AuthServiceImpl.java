@@ -46,21 +46,8 @@ public class AuthServiceImpl {
                 .or(() -> userRepository.findByUsername(principal))
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
-        boolean passwordMatches;
         String storedPassword = existingUser.getPassword();
-        if (storedPassword != null && (storedPassword.startsWith("$2a$")
-                || storedPassword.startsWith("$2b$")
-                || storedPassword.startsWith("$2y$"))) {
-            passwordMatches = passwordEncoder.matches(request.getPassword(), storedPassword);
-        } else {
-            passwordMatches = request.getPassword().equals(storedPassword);
-            if (passwordMatches) {
-                existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
-                userRepository.save(existingUser);
-            }
-        }
-
-        if (!passwordMatches) {
+        if (storedPassword == null || !passwordEncoder.matches(request.getPassword(), storedPassword)) {
             throw new BadCredentialsException("Invalid credentials");
         }
 

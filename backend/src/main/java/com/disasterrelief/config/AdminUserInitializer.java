@@ -29,8 +29,15 @@ public class AdminUserInitializer {
                             .description("System Administrator")
                             .build()));
 
-            if (userRepository.findByEmail("admin@example.com").isEmpty()) {
-                String encoded = passwordEncoder.encode("password");
+            String encoded = passwordEncoder.encode("password");
+            userRepository.findByEmail("admin@example.com").ifPresentOrElse(admin -> {
+                admin.setUsername("admin");
+                admin.setFullName("System Administrator");
+                admin.setIsActive(true);
+                admin.setPassword(encoded);
+                admin.setRoles(Set.of(adminRole));
+                userRepository.save(admin);
+            }, () -> {
                 User admin = User.builder()
                         .username("admin")
                         .email("admin@example.com")
@@ -40,7 +47,7 @@ public class AdminUserInitializer {
                         .roles(Set.of(adminRole))
                         .build();
                 userRepository.save(admin);
-            }
+            });
         };
     }
 }
