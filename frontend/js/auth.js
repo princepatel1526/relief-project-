@@ -52,116 +52,9 @@ export function renderUserInfo() {
   const nameEl   = document.getElementById('user-name');
   const roleEl   = document.getElementById('user-role');
   const avatarEl = document.getElementById('user-avatar');
-  if (nameEl) nameEl.textContent = user.fullName;
-  if (roleEl) roleEl.textContent = user.roles?.[0]?.replace('ROLE_', '') || '';
-  if (avatarEl) avatarEl.textContent = user.fullName.charAt(0).toUpperCase();
-  attachProfileActions();
-}
-
-function attachProfileActions() {
-  const topbarActions = document.querySelector('.topbar-actions');
-  if (!topbarActions || document.getElementById('profile-settings-btn')) return;
-
-  const btn = document.createElement('button');
-  btn.id = 'profile-settings-btn';
-  btn.className = 'btn-icon';
-  btn.title = 'Profile & Password';
-  btn.textContent = '⚙️';
-  btn.addEventListener('click', openProfileModal);
-  topbarActions.appendChild(btn);
-}
-
-function ensureProfileModal() {
-  if (document.getElementById('profile-modal')) return;
-  const modal = document.createElement('div');
-  modal.id = 'profile-modal';
-  modal.className = 'modal-overlay hidden';
-  modal.innerHTML = `
-    <div class="modal">
-      <div class="modal-header">
-        <h3>👤 Profile & Security</h3>
-        <button class="btn-close" id="profile-close-btn">✕</button>
-      </div>
-      <div class="modal-body">
-        <form id="profile-form">
-          <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input class="form-control" type="text" name="fullName" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input class="form-control" type="email" name="email" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Phone</label>
-            <input class="form-control" type="text" name="phone" />
-          </div>
-          <button class="btn btn-primary" type="submit">Save Profile</button>
-        </form>
-        <hr style="margin:18px 0;border:none;border-top:1px solid #e2e8f0;" />
-        <form id="password-form">
-          <div class="form-group">
-            <label class="form-label">Current Password</label>
-            <input class="form-control" type="password" name="currentPassword" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label">New Password</label>
-            <input class="form-control" type="password" name="newPassword" minlength="8" required />
-          </div>
-          <button class="btn btn-secondary" type="submit">Change Password</button>
-        </form>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  document.getElementById('profile-close-btn').addEventListener('click', closeProfileModal);
-
-  document.getElementById('profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = Object.fromEntries(new FormData(e.target));
-    try {
-      const updated = await api.users.updateProfile(formData);
-      const user = getUser() || {};
-      user.fullName = updated.fullName;
-      user.email = updated.email;
-      localStorage.setItem('user', JSON.stringify(user));
-      renderUserInfo();
-      showToast('Profile updated successfully', 'success');
-    } catch (err) {
-      showToast(err.message || 'Failed to update profile', 'error');
-    }
-  });
-
-  document.getElementById('password-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = Object.fromEntries(new FormData(e.target));
-    try {
-      await api.users.changePassword(formData);
-      e.target.reset();
-      showToast('Password changed successfully', 'success');
-    } catch (err) {
-      showToast(err.message || 'Failed to change password', 'error');
-    }
-  });
-}
-
-function openProfileModal() {
-  ensureProfileModal();
-  const user = getUser();
-  if (user) {
-    const form = document.getElementById('profile-form');
-    form.fullName.value = user.fullName || '';
-    form.email.value = user.email || '';
-    form.phone.value = user.phone || '';
-  }
-  document.getElementById('profile-modal').classList.remove('hidden');
-}
-
-function closeProfileModal() {
-  document.getElementById('profile-modal')?.classList.add('hidden');
-}
-
-export function canManageOperations() {
-  return hasRole('ADMIN') || hasRole('COORDINATOR') || hasRole('VOLUNTEER');
+  if (nameEl)   nameEl.textContent   = user.fullName;
+  if (roleEl)   roleEl.textContent   = user.roles?.[0]?.replace('ROLE_', '') || '';
+  if (avatarEl) avatarEl.textContent = user.fullName?.charAt(0).toUpperCase() || '?';
 }
 
 // =============================================
@@ -181,21 +74,13 @@ if (document.getElementById('login-form')) {
     errorDiv.textContent = '';
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: form.usernameOrEmail.value,
-          password: form.password.value,
-        }),
+      // Send as 'email' — backend principal() checks email first then username,
+      // so typing either "admin" or "admin@example.com" works.
+      const data = await api.auth.login({
+        email:    form.usernameOrEmail.value.trim(),
+        password: form.password.value,
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.message || 'Login failed');
-      }
       saveSession(data);
 
       // Redirect based on role
@@ -208,9 +93,8 @@ if (document.getElementById('login-form')) {
         : '/admin-dashboard.html'; // all roles go to dashboard for now
 
     } catch (err) {
-      document.getElementById('login-error').textContent = err.message;
-      document.getElementById('login-error').classList.remove('hidden');
-      showToast(err.message || 'Invalid credentials', 'error');
+      errorDiv.textContent = err.message || 'Login failed. Check your credentials.';
+      errorDiv.classList.remove('hidden');
     } finally {
       btn.disabled    = false;
       btn.textContent = 'Sign In';
@@ -243,16 +127,18 @@ if (document.getElementById('register-form')) {
     }
 
     try {
-      await api.auth.register({
-        username: form.username.value,
-        email: form.email.value,
+      const data = await api.auth.register({
+        username: form.username.value.trim(),
+        email:    form.email.value.trim(),
         password: form.password.value,
         fullName: form.fullName.value.trim(),
         phone:    form.phone.value.trim(),
         role:     form.role.value,
       });
-      showToast('Registration successful! Please login with your credentials.', 'success');
-      setTimeout(() => { window.location.href = '/index.html'; }, 1200);
+
+      saveSession(data);
+      window.location.href = '/admin-dashboard.html';
+
     } catch (err) {
       errorDiv.textContent = err.message || 'Registration failed. Please try again.';
       errorDiv.classList.remove('hidden');

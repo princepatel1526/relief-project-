@@ -119,12 +119,6 @@ const api = {
     markAllRead: () => api.patch('/notifications/mark-all-read'),
   },
 
-  users: {
-    list:          () => api.get('/users'),
-    updateProfile: (body) => api.put('/users/me', body),
-    changePassword:(body) => api.put('/users/me/password', body),
-  },
-
   // Dashboard
   dashboard: {
     stats: () => api.get('/admin/stats'),

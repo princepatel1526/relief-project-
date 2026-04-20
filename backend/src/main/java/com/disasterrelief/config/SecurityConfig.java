@@ -47,21 +47,35 @@ public class SecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // ── Static frontend ───────────────────────────────────────────
+                .requestMatchers("/", "/*.html", "/css/**", "/js/**",
+                                 "/assets/**", "/favicon.ico").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // ── Public API endpoints ──────────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/api/payments/webhook").permitAll()
-                .requestMatchers("/payments/webhook").permitAll()
-                .requestMatchers(HttpMethod.GET, "/disasters/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/disaster-types/**").permitAll()
-                .requestMatchers("/api/actuator/health").permitAll()
-                .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/disasters/**").hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
-                .requestMatchers(HttpMethod.PUT, "/disasters/**").hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
-                .requestMatchers(HttpMethod.DELETE, "/disasters/**").hasRole("ADMIN")
-                .requestMatchers("/assignments/**").hasAnyRole("ADMIN", "COORDINATOR")
-                .requestMatchers("/inventory/**").hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
+                .requestMatchers(HttpMethod.GET, "/api/disasters/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/disaster-types/**").permitAll()
+                .requestMatchers("/api/actuator/health", "/actuator/health").permitAll()
+
+                // ── Role-protected API endpoints ──────────────────────────────
+                .requestMatchers("/api/users", "/api/users/**")
+                    .hasAnyRole("ADMIN", "COORDINATOR")
+                .requestMatchers("/api/admin/**")
+                    .hasAnyRole("ADMIN", "COORDINATOR")
+                .requestMatchers(HttpMethod.POST,   "/api/disasters/**")
+                    .hasAnyRole("ADMIN", "COORDINATOR")
+                .requestMatchers(HttpMethod.PUT,    "/api/disasters/**")
+                    .hasAnyRole("ADMIN", "COORDINATOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/disasters/**")
+                    .hasRole("ADMIN")
+                .requestMatchers("/api/assignments/**")
+                    .hasAnyRole("ADMIN", "COORDINATOR")
+                .requestMatchers("/api/inventory/**")
+                    .hasAnyRole("ADMIN", "COORDINATOR")
+
+                // ── Everything else requires login ────────────────────────────
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
