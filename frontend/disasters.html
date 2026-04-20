@@ -48,7 +48,7 @@
               <option value="LOW">Low</option>
             </select>
           </div>
-          <button class="btn btn-primary" id="create-disaster-btn" onclick="openCreateModal()">+ Report Disaster</button>
+          <button class="btn btn-primary" onclick="openCreateModal()">+ Report Disaster</button>
         </div>
 
         <div class="card">
@@ -138,15 +138,12 @@
 
   <script type="module">
     import api from './js/api.js';
-    import { requireAuth, renderUserInfo, logout as authLogout, canManageOperations } from './js/auth.js';
+    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
     import { showToast, severityBadge, statusBadge, buildPagination, formatDate } from './js/utils.js';
 
     window.logout = authLogout;
     requireAuth();
     renderUserInfo();
-    if (!canManageOperations()) {
-      document.getElementById('create-disaster-btn').style.display = 'none';
-    }
 
     let currentPage = 0;
 
@@ -206,10 +203,6 @@
     window.closeModal = () => document.getElementById('create-modal').classList.add('hidden');
 
     window.submitDisaster = async () => {
-      if (!canManageOperations()) {
-        showToast('Only Admin, Coordinator, or Volunteer can add disasters.', 'error');
-        return;
-      }
       const form = document.getElementById('disaster-form');
       const data = Object.fromEntries(new FormData(form));
       data.disasterTypeId = parseInt(data.disasterTypeId);
