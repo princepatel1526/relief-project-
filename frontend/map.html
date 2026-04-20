@@ -27,6 +27,28 @@
       border: 1px solid var(--border);
       z-index: 1;
     }
+    .map-canvas-wrap {
+      position: relative;
+      min-height: 400px;
+      height: 100%;
+    }
+    .map-state {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+    .map-state.visible { display: flex; }
     .map-sidebar {
       display: flex;
       flex-direction: column;
@@ -181,7 +203,10 @@
         </div>
 
         <!-- Right: Map -->
-        <div id="leaflet-map"></div>
+        <div class="map-canvas-wrap">
+          <div id="leaflet-map"></div>
+          <div class="map-state visible" id="map-state">Loading map…</div>
+        </div>
       </div>
     </main>
   </div>
@@ -191,20 +216,23 @@
 <script type="module">
   import api from './js/api.js';
   import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
-  import { showToast, severityBadge } from './js/utils.js';
+  import { showToast } from './js/utils.js';
   import './js/profile.js';
 
   window.logout = authLogout;
   requireAuth();
   renderUserInfo();
 
-  // ── Map init ────────────────────────────────────────────────────────────
-  const map = L.map('leaflet-map').setView([20.5937, 78.9629], 5); // India centre
+  const INDIA_CENTER = [20.5937, 78.9629];
+  const INDIA_ZOOM = 5;
+  let map = null;
+  let mapReady = false;
+  const mapStateEl = document.getElementById('map-state');
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19,
-  }).addTo(map);
+  function setMapState(message = '', visible = false) {
+    mapStateEl.textContent = message;
+    mapStateEl.classList.toggle('visible', visible);
+  }
 
   const SEVERITY_CONFIG = {
     CRITICAL: { color: '#a8281a', radius: 14, fillOpacity: 0.85 },
@@ -224,8 +252,9 @@
 
   function renderMarkers(disasters) {
     clearMarkers();
+    let plottedCount = 0;
     disasters.forEach(d => {
-      if (!d.latitude || !d.longitude) return;
+      if (d.latitude == null || d.longitude == null) return;
       const cfg = SEVERITY_CONFIG[d.severity] || SEVERITY_CONFIG.MEDIUM;
       const circle = L.circleMarker([d.latitude, d.longitude], {
         radius: cfg.radius,
@@ -255,7 +284,15 @@
       `);
 
       markers.push(circle);
+      plottedCount += 1;
     });
+
+    if (mapReady && plottedCount > 0) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.2));
+    } else if (mapReady) {
+      map.setView(INDIA_CENTER, INDIA_ZOOM);
+    }
   }
 
   function renderList(disasters) {
@@ -267,7 +304,7 @@
     }
     el.innerHTML = disasters.map(d => {
       const cfg = SEVERITY_CONFIG[d.severity] || SEVERITY_CONFIG.MEDIUM;
-      return `<div class="incident-item" onclick="flyTo(${d.latitude},${d.longitude})">
+      return `<div class="incident-item" onclick="flyTo(${d.latitude ?? 'null'},${d.longitude ?? 'null'})">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">
           <h4 style="margin:0">${d.title}</h4>
           <span style="background:${cfg.color};color:#fff;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:700;flex-shrink:0;">${d.severity}</span>
@@ -293,12 +330,17 @@
   };
 
   window.flyTo = function(lat, lng) {
-    if (lat && lng) map.flyTo([lat, lng], 10, { duration: 1.2 });
+    if (lat == null || lng == null || !mapReady) {
+      showToast('Coordinates unavailable for this incident', 'warning');
+      return;
+    }
+    map.flyTo([lat, lng], 10, { duration: 1.2 });
   };
 
   window.locateMe = function() {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(pos => {
+        if (!mapReady) return;
         map.flyTo([pos.coords.latitude, pos.coords.longitude], 10);
         L.marker([pos.coords.latitude, pos.coords.longitude])
           .bindPopup('<b>📍 Your Location</b>').addTo(map).openPopup();
@@ -312,6 +354,7 @@
 
   async function loadMap() {
     try {
+      setMapState('Loading incidents…', true);
       const res = await api.map.all();
       allDisasters = res.content || [];
 
@@ -324,15 +367,50 @@
         ? (totalPeople / 1000).toFixed(1) + 'k' : totalPeople;
 
       applyFilter();
+      const hasCoordinates = allDisasters.some(d => d.latitude != null && d.longitude != null);
+      setMapState(
+        hasCoordinates
+          ? ''
+          : 'No mappable coordinates found yet. The map is ready—new reports with latitude/longitude will appear here.',
+        !hasCoordinates
+      );
     } catch (err) {
       showToast('Failed to load map data: ' + err.message, 'error');
       document.getElementById('incident-list').innerHTML =
         '<p style="padding:16px;color:var(--danger);font-size:13px;">Failed to load incidents.</p>';
+      setMapState('Unable to load incident data. Please retry.', true);
     }
   }
 
-  loadMap();
-  setInterval(loadMap, 30000); // refresh every 30s
+  function initMap() {
+    if (!window.L) {
+      setMapState('Map library failed to load. Check internet access and retry.', true);
+      document.getElementById('incident-list').innerHTML =
+        '<p style="padding:16px;color:var(--danger);font-size:13px;">Map engine unavailable.</p>';
+      return false;
+    }
+
+    map = L.map('leaflet-map', { zoomControl: true }).setView(INDIA_CENTER, INDIA_ZOOM);
+    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map);
+
+    tiles.on('tileerror', () => {
+      showToast('Map tiles failed to load. Check network connectivity.', 'error');
+    });
+
+    map.whenReady(() => {
+      mapReady = true;
+      setTimeout(() => map.invalidateSize(), 50);
+    });
+    return true;
+  }
+
+  if (initMap()) {
+    loadMap();
+    setInterval(loadMap, 30000); // refresh every 30s
+  }
 </script>
 </body>
 </html>

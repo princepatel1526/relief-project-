@@ -106,7 +106,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon green">💰</div>
-            <div><div class="stat-value" id="stat-donations">—</div><div class="stat-label">Total Donated</div></div>
+            <div><div class="stat-value is-currency" id="stat-donations">—</div><div class="stat-label">Total Donated</div></div>
           </div>
           <div class="stat-card">
             <div class="stat-icon amber">📦</div>
@@ -180,7 +180,7 @@
   <script type="module">
     import api from './js/api.js';
     import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
-    import { showToast, formatCurrency, severityBadge, statusBadge, urgencyBar } from './js/utils.js';
+    import { showToast, formatCurrency, formatCurrencyCompactIndian, severityBadge, statusBadge, urgencyBar } from './js/utils.js';
     import { connectWebSocket } from './js/websocket.js';
     import './js/profile.js';
 
@@ -215,7 +215,9 @@
         document.getElementById('stat-volunteers').textContent = stats.availableVolunteers;
         document.getElementById('stat-pending').textContent   = stats.pendingRequests;
         document.getElementById('stat-fulfilled').textContent = stats.fulfilledRequests;
-        document.getElementById('stat-donations').textContent = formatCurrency(stats.totalDonationAmount);
+        const donationEl = document.getElementById('stat-donations');
+        donationEl.textContent = formatCurrencyCompactIndian(stats.totalDonationAmount);
+        donationEl.title = formatCurrency(stats.totalDonationAmount);
         document.getElementById('stat-lowstock').textContent  = stats.lowStockItems;
         document.getElementById('pending-badge').textContent  = stats.pendingRequests;
         document.getElementById('last-updated').textContent   = 'Updated ' + new Date().toLocaleTimeString();
