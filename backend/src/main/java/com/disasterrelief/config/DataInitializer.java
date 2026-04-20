@@ -37,7 +37,8 @@ public class DataInitializer implements CommandLineRunner {
             Role.RoleName.ROLE_DONOR,         "Donor contributing resources",
             Role.RoleName.ROLE_CITIZEN,       "Citizen reporting incidents and needs",
             Role.RoleName.ROLE_RESPONDER,     "Professional first responder",
-            Role.RoleName.ROLE_NGO,           "NGO coordinator managing partner operations"
+            Role.RoleName.ROLE_NGO,           "NGO partner user",
+            Role.RoleName.ROLE_NGO_COORDINATOR, "NGO coordinator managing partner operations"
         );
 
         roles.forEach((name, desc) -> {
