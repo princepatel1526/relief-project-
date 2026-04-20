@@ -2,7 +2,6 @@ package com.disasterrelief.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -51,8 +50,8 @@ public class Assignment {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    @Column(name = "hours_logged", precision = 6, scale = 2)
-    private BigDecimal hoursLogged;
+    @Column(name = "hours_logged")
+    private Double hoursLogged;
 
     @PrePersist
     void prePersist() { this.assignedAt = LocalDateTime.now(); }

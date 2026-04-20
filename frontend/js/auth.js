@@ -62,10 +62,21 @@ if (document.getElementById('login-form')) {
     btn.textContent = 'Signing in...';
 
     try {
-      const data = await api.auth.login({
-        usernameOrEmail: form.usernameOrEmail.value,
-        password: form.password.value,
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: form.usernameOrEmail.value,
+          password: form.password.value,
+        }),
       });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || 'Login failed');
+      }
       saveSession(data);
       window.location.href = '/admin-dashboard.html';
     } catch (err) {
