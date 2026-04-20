@@ -40,45 +40,6 @@ async function ensureLucide() {
 async function renderIcons() {
   const ok = await ensureLucide();
   if (!ok) return;
-
-  const iconMap = {
-    '🚨': 'shield-alert',
-    '📊': 'layout-dashboard',
-    '📈': 'line-chart',
-    '🗺️': 'map',
-    '📝': 'file-pen-line',
-    '🌪️': 'cloud-lightning',
-    '🆘': 'siren',
-    '👥': 'users',
-    '📦': 'package',
-    '🙋': 'user-check',
-    '💰': 'hand-coins',
-    '🚪': 'log-out',
-    '🔄': 'refresh-cw',
-    '🔔': 'bell',
-    '✅': 'check-circle-2',
-    '🌤️': 'sun',
-    '📍': 'locate-fixed',
-    '⚠️': 'triangle-alert',
-    '📋': 'list-checks'
-  };
-
-  const iconEmojiNodes = document.querySelectorAll('.icon, .logo-icon, .stat-icon, .empty-state .icon, .impact-icon, .success-icon');
-  iconEmojiNodes.forEach(el => {
-    const text = el.textContent.trim();
-    if (iconMap[text]) el.innerHTML = `<i data-lucide="${iconMap[text]}"></i>`;
-  });
-
-  const stripIn = document.querySelectorAll('.topbar-title, .card-header h3, .mini-chart-card h4, .btn, .btn-icon, .map-hint');
-  const emojiPattern = /\p{Extended_Pictographic}\uFE0F?/gu;
-  stripIn.forEach(el => {
-    el.childNodes.forEach(node => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        node.textContent = node.textContent.replace(emojiPattern, '').replace(/\s{2,}/g, ' ').trimStart();
-      }
-    });
-  });
-
   window.lucide.createIcons();
 }
 
@@ -171,7 +132,7 @@ overlay.innerHTML = `
   <div class="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
     <div class="profile-modal-header">
       <h3 id="profile-title">My Profile</h3>
-      <button class="profile-modal-close" id="profile-close" aria-label="Close">✕</button>
+      <button class="profile-modal-close" id="profile-close" aria-label="Close"><i data-lucide="x"></i></button>
     </div>
 
     <div class="profile-tabs">

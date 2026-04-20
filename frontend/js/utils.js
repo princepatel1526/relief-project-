@@ -2,7 +2,7 @@ export function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
   if (!container) return;
 
-  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const icons = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Info' };
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.innerHTML = `<span>${icons[type] || ''}</span> ${message}`;
@@ -131,8 +131,9 @@ export function loading(container, msg = 'Loading...') {
 export function empty(container, title = 'No data', msg = '') {
   container.innerHTML = `
     <div class="empty-state">
-      <div class="icon">📋</div>
+      <div class="icon"><i data-lucide="list-checks"></i></div>
       <h3>${title}</h3>
       <p>${msg}</p>
     </div>`;
+  if (window.lucide) window.lucide.createIcons();
 }

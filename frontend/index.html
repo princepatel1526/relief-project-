@@ -272,13 +272,14 @@
     }
     .anim-in { animation: fadeUp 220ms cubic-bezier(.4,0,.2,1) both; }
   </style>
+  <script defer src="js/icons-init.js"></script>
 </head>
 <body>
 
   <!-- ═══════════════ LEFT BRANDING PANEL ═══════════════ -->
   <div class="auth-left">
     <div class="brand-mark">
-      <div class="brand-icon">🚨</div>
+      <div class="brand-icon"><i data-lucide="shield-alert"></i></div>
       <span class="brand-name">Disaster Relief Platform</span>
     </div>
 
@@ -350,7 +351,7 @@
 
       <div class="rec-head">
         <h3 id="rec-title">Account Recovery</h3>
-        <button class="rec-close" id="rec-close">✕</button>
+        <button class="rec-close" id="rec-close"><i data-lucide="x"></i></button>
       </div>
 
       <div class="rec-tabs">
@@ -404,7 +405,7 @@
         <!-- Step 3: success -->
         <div class="rec-step" id="pw-s3">
           <div style="text-align:center; padding: 12px 0 20px;">
-            <div style="font-size:44px; margin-bottom:14px;">✅</div>
+            <div style="font-size:44px; margin-bottom:14px;"><i data-lucide="check-circle-2"></i></div>
             <h3 style="font-size:17px; font-weight:700; color:#111110; margin-bottom:8px;">Password Reset!</h3>
             <p style="font-size:13.5px; color:#8a8784; line-height:1.6;">Your password has been changed successfully.<br>You can now sign in with your new password.</p>
           </div>
@@ -453,7 +454,7 @@
         <!-- Step 3: result -->
         <div class="rec-step" id="un-s3">
           <p style="font-size:13.5px; color:#4a4845; margin-bottom:14px; line-height:1.6;">
-            Identity verified ✅ — here are your account details:
+            Identity verified — here are your account details:
           </p>
           <div class="result-card anim-in" id="un-result"></div>
           <div class="rec-footer" style="margin-top:16px;">

@@ -144,12 +144,13 @@ a { color: inherit; }
   font-size: 13.5px; font-weight: 500;
   border-left: 2px solid transparent;
   border-radius: 0;
-  transition: color var(--ease), background var(--ease), border-color var(--ease);
+  transition: color var(--ease), background var(--ease), border-color var(--ease), transform var(--ease);
 }
 
 .nav-link:hover {
   color: #f0ede8;
   background: rgba(255,255,255,.05);
+  transform: translateX(2px);
 }
 
 .nav-link.active {
@@ -390,6 +391,7 @@ a { color: inherit; }
 }
 
 .btn:hover   { box-shadow: var(--shadow-xs); }
+.btn:hover i { transform: translateY(-1px); }
 .btn:active  { transform: scale(.97); box-shadow: none; }
 .btn:disabled{ opacity: .5; cursor: not-allowed; pointer-events: none; }
 
@@ -707,6 +709,7 @@ tbody tr:last-child td { border-bottom: none; }
 
 /* Smooth table row transitions */
 table tr { transition: background var(--ease); }
+table tbody tr:hover { background: #faf9f7; }
 
 /* Form focus ring */
 .form-control { transition: border-color var(--ease), box-shadow var(--ease); }
