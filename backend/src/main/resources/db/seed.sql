@@ -16,18 +16,26 @@ INSERT IGNORE INTO roles (name, description) VALUES
 -- =============================================
 INSERT IGNORE INTO users (username, email, password, full_name, phone, is_active) VALUES
 ('admin',       'admin@disasterrelief.org',      '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'System Admin',        '9000000001', TRUE),
+('superadmin',  'superadmin@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Global Super Admin',  '9000000009', TRUE),
 ('ngo_coord1',  'ngo.coord@disasterrelief.org',  '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Rahul NGO Coordinator','9000000002', TRUE),
 ('volunteer1',  'volunteer1@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Priya Sharma',        '9000000003', TRUE),
 ('volunteer2',  'volunteer2@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Amit Kumar',          '9000000004', TRUE),
+('responder1',  'responder1@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Riya Responder',      '9000000008', TRUE),
 ('citizen1',    'citizen1@example.com',          '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Sneha Citizen',       '9000000005', TRUE);
 
 -- Assign roles
-INSERT IGNORE INTO user_roles (user_id, role_id) VALUES
-(1, (SELECT id FROM roles WHERE name = 'ROLE_ADMIN')), -- admin
-(2, (SELECT id FROM roles WHERE name = 'ROLE_NGO_COORDINATOR')), -- ngo coordinator
-(3, (SELECT id FROM roles WHERE name = 'ROLE_VOLUNTEER')), -- volunteer1
-(4, (SELECT id FROM roles WHERE name = 'ROLE_VOLUNTEER')), -- volunteer2
-(5, (SELECT id FROM roles WHERE name = 'ROLE_CITIZEN')); -- citizen
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_ADMIN' WHERE u.username = 'admin';
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_SUPER_ADMIN' WHERE u.username = 'superadmin';
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_NGO_COORDINATOR' WHERE u.username = 'ngo_coord1';
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_VOLUNTEER' WHERE u.username IN ('volunteer1', 'volunteer2');
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_RESPONDER' WHERE u.username = 'responder1';
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_CITIZEN' WHERE u.username = 'citizen1';
 
 -- =============================================
 -- SEED DISASTER TYPES
@@ -106,7 +114,7 @@ INSERT IGNORE INTO inventory (item_name, category, quantity, unit, location_id, 
 -- =============================================
 -- SEED NEWS FEED
 -- =============================================
-INSERT INTO news_updates (title, summary, content, image_url, disaster_type, severity, status, location, latitude, longitude, source_incident_id, created_by)
+INSERT INTO news_updates (title, summary, content, image_url, disaster_type, severity, status, location, latitude, longitude, source_incident_id, affected_people, rescue_progress, created_by)
 SELECT
   'Mumbai Coastal Flooding: Evacuation Corridors Open',
   'Response teams opened high-ground evacuation corridors and expanded shelter capacity in Mumbai coastal zones.',
@@ -119,6 +127,8 @@ SELECT
   19.0760,
   72.8777,
   1,
+  5000,
+  58,
   1
 WHERE NOT EXISTS (SELECT 1 FROM news_updates WHERE title = 'Mumbai Coastal Flooding: Evacuation Corridors Open');
 

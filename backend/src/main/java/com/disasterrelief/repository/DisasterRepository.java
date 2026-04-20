@@ -18,6 +18,8 @@ public interface DisasterRepository extends JpaRepository<Disaster, Long> {
 
     Page<Disaster> findByStatusAndSeverity(Disaster.DisasterStatus status, Disaster.Severity severity, Pageable pageable);
 
+    Page<Disaster> findByReportedById(Long reportedById, Pageable pageable);
+
     List<Disaster> findByStatusIn(List<Disaster.DisasterStatus> statuses);
 
     @Query("""

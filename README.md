@@ -106,9 +106,12 @@ Open `frontend/index.html` via VS Code Live Server or any static file server.
 
 | Role        | Username      | Password      |
 |-------------|---------------|---------------|
-| Admin       | `admin`       | `password123` |
-| NGO Coordinator | `ngo_coord1`| `password123` |
+| Citizen     | `citizen1`    | `password123` |
 | Volunteer   | `volunteer1`  | `password123` |
+| Responder   | `responder1`  | `password123` |
+| NGO Coordinator | `ngo_coord1`| `password123` |
+| Admin       | `admin`       | `password123` |
+| Super Admin | `superadmin`  | `password123` |
 
 ---
 

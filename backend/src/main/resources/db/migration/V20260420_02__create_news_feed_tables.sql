@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS news_updates (
     latitude            DOUBLE,
     longitude           DOUBLE,
     source_incident_id  BIGINT,
+    affected_people     INT,
+    rescue_progress     INT,
     created_by          BIGINT,
     created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

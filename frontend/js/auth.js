@@ -19,6 +19,17 @@ export function hasRole(role) {
   return user?.roles?.includes(`ROLE_${role.toUpperCase()}`);
 }
 
+export function getPrimaryRole() {
+  const user = getUser();
+  return user?.roles?.[0] || 'ROLE_CITIZEN';
+}
+
+export function defaultDashboardPath() {
+  const role = getPrimaryRole();
+  if (role === 'ROLE_ADMIN' || role === 'ROLE_SUPER_ADMIN') return '/admin-dashboard.html';
+  return '/dashboard.html';
+}
+
 export function requireAuth() {
   if (!isLoggedIn()) {
     window.location.href = '/index.html';
@@ -87,7 +98,7 @@ if (document.getElementById('login-form')) {
       });
 
       saveSession(data);
-      window.location.href = '/admin-dashboard.html';
+      window.location.href = defaultDashboardPath();
 
     } catch (err) {
       showLoginError(err.message || 'Invalid credentials. Please try again.');

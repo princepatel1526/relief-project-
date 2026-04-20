@@ -24,7 +24,8 @@ public class RoleSchemaMigrationRunner implements CommandLineRunner {
         try {
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
                 new ClassPathResource("db/migration/V20260420_01__roles_name_to_varchar_and_standardize.sql"),
-                new ClassPathResource("db/migration/V20260420_02__create_news_feed_tables.sql")
+                new ClassPathResource("db/migration/V20260420_02__create_news_feed_tables.sql"),
+                new ClassPathResource("db/migration/V20260420_03__extend_news_with_people_and_progress.sql")
             );
             populator.setContinueOnError(true);
             populator.execute(dataSource);

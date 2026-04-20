@@ -56,6 +56,7 @@
 
         <div class="news-toolbar">
           <input id="news-search" class="form-control" placeholder="Search updates, location, keywords...">
+          <input id="news-region" class="form-control" placeholder="Filter by region / city">
           <div class="news-filters" id="news-filters">
             <button class="news-filter-chip active" data-filter="ACTIVE_FIRST">Active First</button>
             <button class="news-filter-chip" data-filter="LATEST">Latest</button>
@@ -121,14 +122,14 @@
       document.getElementById('user-avatar').textContent = 'P';
     }
 
-    let state = { filter: 'ACTIVE_FIRST', q: '', page: 0 };
+    let state = { filter: 'ACTIVE_FIRST', q: '', region: '', page: 0 };
 
     const filterToParams = () => {
-      if (state.filter === 'CRITICAL') return { severity: 'CRITICAL' };
-      if (state.filter === 'LATEST') return {};
-      if (state.filter === 'ACTIVE_FIRST') return { status: 'ACTIVE' };
-      if (['Flood', 'Fire', 'Landslide', 'Medical'].includes(state.filter)) return { disasterType: state.filter };
-      return {};
+      if (state.filter === 'CRITICAL') return { severity: 'CRITICAL', sort: 'CRITICAL_FIRST' };
+      if (state.filter === 'LATEST') return { sort: 'LATEST' };
+      if (state.filter === 'ACTIVE_FIRST') return { status: 'ACTIVE', sort: 'ACTIVE_FIRST' };
+      if (['Flood', 'Fire', 'Landslide', 'Medical'].includes(state.filter)) return { disasterType: state.filter, sort: 'LATEST' };
+      return { sort: 'LATEST' };
     };
 
     async function loadNews(page = 0) {
@@ -136,7 +137,7 @@
       const grid = document.getElementById('news-grid');
       grid.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
       try {
-        const params = { ...filterToParams(), q: state.q || null, page, size: 12 };
+        const params = { ...filterToParams(), q: state.q || null, region: state.region || null, page, size: 12 };
         const data = await api.news.list(params);
         if (!data.content?.length) {
           grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon"><i data-lucide="newspaper"></i></div><h3>No updates found</h3><p>Try another filter or keyword.</p></div>`;
@@ -151,7 +152,7 @@
         }
         grid.innerHTML = cards.map(n => `
           <article class="news-card">
-            <img src="${n.imageUrl || 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80'}" alt="${n.title}">
+            <img src="${n.imageUrl || '/assets/news/fallback.svg'}" alt="${n.title}">
             <div class="news-card-body">
               <div class="news-meta">${severityBadge(n.severity)} ${statusBadge(n.status)}</div>
               <div class="news-title">${n.title}</div>
@@ -160,7 +161,10 @@
                 <span class="news-location"><i data-lucide="map-pin"></i>${n.location || 'Unknown Location'}</span>
                 <span>${formatDate(n.createdAt)}</span>
               </div>
-              <a class="btn btn-outline btn-sm" href="news-detail.html?id=${n.id}">Read More</a>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <small style="color:var(--text-muted)">Affected: ${(n.affectedPeople || 0).toLocaleString()} • Progress: ${n.rescueProgress ?? 0}%</small>
+                <a class="btn btn-outline btn-sm" href="news-detail.html?id=${n.id}">Read More</a>
+              </div>
             </div>
           </article>
         `).join('');
@@ -174,6 +178,10 @@
 
     document.getElementById('news-search').addEventListener('input', (e) => {
       state.q = e.target.value.trim();
+      loadNews(0);
+    });
+    document.getElementById('news-region').addEventListener('input', (e) => {
+      state.region = e.target.value.trim();
       loadNews(0);
     });
 

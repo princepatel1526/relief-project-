@@ -55,6 +55,7 @@ public class SecurityConfig {
                 // ── Public API endpoints ──────────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()  // covers login, register, forgot-username, reset-password
                 .requestMatchers("/api/payments/webhook").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/disasters/my").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/disasters/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/disaster-types/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/news", "/api/news/**").permitAll()

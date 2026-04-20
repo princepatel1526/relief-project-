@@ -17,6 +17,8 @@ public interface NewsUpdateRepository extends JpaRepository<NewsUpdate, Long> {
 
     Page<NewsUpdate> findByDisasterTypeContainingIgnoreCaseOrderByCreatedAtDesc(String disasterType, Pageable pageable);
 
+    Page<NewsUpdate> findByLocationContainingIgnoreCaseOrderByCreatedAtDesc(String region, Pageable pageable);
+
     @Query("""
         SELECT n FROM NewsUpdate n
         WHERE LOWER(n.title) LIKE LOWER(CONCAT('%', :q, '%'))

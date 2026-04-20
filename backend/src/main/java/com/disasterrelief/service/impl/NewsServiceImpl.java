@@ -14,6 +14,7 @@ import com.disasterrelief.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -37,13 +38,17 @@ public class NewsServiceImpl {
     public Page<NewsUpdateResponse> list(NewsUpdate.NewsStatus status,
                                          Disaster.Severity severity,
                                          String disasterType,
+                                         String region,
+                                         String sort,
                                          String query,
                                          Pageable pageable) {
-        autoIngestDisastersIfNeeded();
+        syncFromDisasters();
 
         Page<NewsUpdate> page;
         if (query != null && !query.isBlank()) {
             page = newsUpdateRepository.search(query.trim(), pageable);
+        } else if (region != null && !region.isBlank()) {
+            page = newsUpdateRepository.findByLocationContainingIgnoreCaseOrderByCreatedAtDesc(region.trim(), pageable);
         } else if (status != null) {
             page = newsUpdateRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
         } else if (severity != null) {
@@ -54,12 +59,21 @@ public class NewsServiceImpl {
             page = newsUpdateRepository.findAll(pageable);
         }
 
-        return page.map(this::toResponse);
+        List<NewsUpdate> ordered = new ArrayList<>(page.getContent());
+        if ("ACTIVE_FIRST".equalsIgnoreCase(sort)) {
+            ordered.sort((a, b) -> Boolean.compare(a.getStatus() != NewsUpdate.NewsStatus.ACTIVE, b.getStatus() != NewsUpdate.NewsStatus.ACTIVE));
+        } else if ("CRITICAL_FIRST".equalsIgnoreCase(sort)) {
+            ordered.sort((a, b) -> severityRank(a.getSeverity()) - severityRank(b.getSeverity()));
+        } else {
+            ordered.sort(Comparator.comparing(NewsUpdate::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+        }
+
+        return new PageImpl<>(ordered.stream().map(this::toResponse).toList(), pageable, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
     public NewsUpdateResponse getById(Long id) {
-        autoIngestDisastersIfNeeded();
+        syncFromDisasters();
         NewsUpdate news = newsUpdateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("News", "id", id));
         return toResponse(news);
@@ -90,64 +104,60 @@ public class NewsServiceImpl {
     }
 
     @Transactional
-    protected void autoIngestDisastersIfNeeded() {
-        if (newsUpdateRepository.count() > 0) {
-            return;
-        }
-
+    protected void syncFromDisasters() {
         List<Disaster> disasters = disasterRepository.findAll();
-        if (disasters.isEmpty()) {
-            return;
-        }
+        if (disasters.isEmpty()) return;
 
+        List<NewsUpdate> existing = newsUpdateRepository.findAll();
         for (Disaster d : disasters) {
-            if (d.getStatus() == Disaster.DisasterStatus.CLOSED) {
-                continue;
-            }
-            if (d.getId() != null && newsUpdateRepository.existsBySourceIncidentId(d.getId())) {
-                continue;
-            }
+            if (d.getStatus() == Disaster.DisasterStatus.CLOSED || d.getStatus() == Disaster.DisasterStatus.REPORTED) continue;
 
-            NewsUpdate news = NewsUpdate.builder()
-                    .title(d.getTitle())
-                    .summary(buildSummary(d.getDescription()))
-                    .content(d.getDescription() != null ? d.getDescription() : "Incident reported and currently under monitoring.")
-                    .imageUrl(defaultImageBySeverity(d.getSeverity()))
-                    .disasterType(d.getDisasterType() != null ? d.getDisasterType().getName() : "General")
-                    .severity(d.getSeverity())
-                    .status(mapStatus(d.getStatus()))
-                    .location(d.getLocationName())
-                    .latitude(d.getLatitude())
-                    .longitude(d.getLongitude())
-                    .sourceIncidentId(d.getId())
-                    .createdBy(d.getReportedBy())
-                    .build();
+            NewsUpdate news = existing.stream()
+                    .filter(n -> n.getSourceIncidentId() != null && n.getSourceIncidentId().equals(d.getId()))
+                    .findFirst()
+                    .orElseGet(NewsUpdate::new);
 
-            List<NewsTimelineUpdate> timeline = new ArrayList<>();
-            timeline.add(NewsTimelineUpdate.builder()
-                    .news(news)
-                    .updateText("Incident registered in operations system.")
-                    .timestamp(d.getCreatedAt() != null ? d.getCreatedAt() : LocalDateTime.now())
-                    .build());
-            if (d.getStatus() == Disaster.DisasterStatus.ACTIVE || d.getStatus() == Disaster.DisasterStatus.CONTAINED) {
+            news.setTitle(d.getTitle());
+            news.setSummary(buildSummary(d.getDescription(), d.getAffectedPeople(), d.getLocationName()));
+            news.setContent(generateArticle(d));
+            news.setImageUrl(defaultImageByType(d.getDisasterType() != null ? d.getDisasterType().getName() : null));
+            news.setDisasterType(d.getDisasterType() != null ? d.getDisasterType().getName() : "General");
+            news.setSeverity(d.getSeverity());
+            news.setStatus(mapStatus(d.getStatus()));
+            news.setLocation(d.getLocationName());
+            news.setLatitude(d.getLatitude());
+            news.setLongitude(d.getLongitude());
+            news.setSourceIncidentId(d.getId());
+            news.setCreatedBy(d.getReportedBy());
+            news.setAffectedPeople(d.getAffectedPeople());
+            news.setRescueProgress(progressFromStatus(d.getStatus()));
+
+            if (news.getTimelineUpdates() == null || news.getTimelineUpdates().isEmpty()) {
+                List<NewsTimelineUpdate> timeline = new ArrayList<>();
                 timeline.add(NewsTimelineUpdate.builder()
                         .news(news)
-                        .updateText("Field response teams deployed and monitoring continues.")
-                        .timestamp(LocalDateTime.now().minusHours(2))
+                        .updateText("Incident verified and entered into the live operations feed.")
+                        .timestamp(d.getCreatedAt() != null ? d.getCreatedAt() : LocalDateTime.now())
                         .build());
+                timeline.add(NewsTimelineUpdate.builder()
+                        .news(news)
+                        .updateText("Rescue coordination teams deployed to affected sectors.")
+                        .timestamp(LocalDateTime.now().minusHours(1))
+                        .build());
+                news.setTimelineUpdates(timeline);
             }
-            news.setTimelineUpdates(timeline);
+
             newsUpdateRepository.save(news);
         }
-
-        log.info("Auto-generated news feed from existing disasters");
     }
 
     private void apply(NewsUpdateRequest request, NewsUpdate news, User currentUser) {
         news.setTitle(request.getTitle());
         news.setSummary(request.getSummary());
         news.setContent(request.getContent());
-        news.setImageUrl(request.getImageUrl());
+        news.setImageUrl((request.getImageUrl() == null || request.getImageUrl().isBlank())
+                ? defaultImageByType(request.getDisasterType())
+                : request.getImageUrl());
         news.setDisasterType(request.getDisasterType());
         news.setSeverity(request.getSeverity());
         news.setStatus(request.getStatus());
@@ -155,11 +165,11 @@ public class NewsServiceImpl {
         news.setLatitude(request.getLatitude());
         news.setLongitude(request.getLongitude());
         news.setSourceIncidentId(request.getSourceIncidentId());
+        news.setAffectedPeople(request.getAffectedPeople());
+        news.setRescueProgress(request.getRescueProgress());
         news.setCreatedBy(currentUser);
 
-        if (news.getTimelineUpdates() == null) {
-            news.setTimelineUpdates(new ArrayList<>());
-        }
+        if (news.getTimelineUpdates() == null) news.setTimelineUpdates(new ArrayList<>());
         news.getTimelineUpdates().clear();
         if (request.getTimelineUpdates() != null) {
             request.getTimelineUpdates().stream()
@@ -169,15 +179,12 @@ public class NewsServiceImpl {
                                     .news(news)
                                     .updateText(updateText.trim())
                                     .timestamp(LocalDateTime.now())
-                                    .build()
-                    ));
+                                    .build()));
         }
     }
 
     private NewsUpdate.NewsStatus mapStatus(Disaster.DisasterStatus status) {
-        if (status == null) {
-            return NewsUpdate.NewsStatus.MONITORING;
-        }
+        if (status == null) return NewsUpdate.NewsStatus.MONITORING;
         return switch (status) {
             case ACTIVE -> NewsUpdate.NewsStatus.ACTIVE;
             case RESOLVED, CLOSED -> NewsUpdate.NewsStatus.RESOLVED;
@@ -185,21 +192,61 @@ public class NewsServiceImpl {
         };
     }
 
-    private String buildSummary(String description) {
-        if (description == null || description.isBlank()) {
-            return "Operations teams are actively monitoring this developing incident.";
+    private String buildSummary(String description, Integer affectedPeople, String locationName) {
+        if (description != null && !description.isBlank()) {
+            String normalized = description.trim();
+            return normalized.length() <= 180 ? normalized : normalized.substring(0, 177) + "...";
         }
-        String normalized = description.trim();
-        return normalized.length() <= 180 ? normalized : normalized.substring(0, 177) + "...";
+        String people = (affectedPeople != null && affectedPeople > 0) ? (affectedPeople + " people") : "multiple residents";
+        String location = (locationName != null && !locationName.isBlank()) ? locationName : "the impacted region";
+        return "Emergency response teams are monitoring " + location + " where " + people + " may be affected.";
     }
 
-    private String defaultImageBySeverity(Disaster.Severity severity) {
-        return switch (severity != null ? severity : Disaster.Severity.MEDIUM) {
-            case CRITICAL -> "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80";
-            case HIGH -> "https://images.unsplash.com/photo-1475776408506-9a5371e7a068?auto=format&fit=crop&w=1200&q=80";
-            case MEDIUM -> "https://images.unsplash.com/photo-1454789548928-9efd52dc4031?auto=format&fit=crop&w=1200&q=80";
-            case LOW -> "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?auto=format&fit=crop&w=1200&q=80";
+    private String generateArticle(Disaster d) {
+        String type = d.getDisasterType() != null ? d.getDisasterType().getName() : "incident";
+        String location = d.getLocationName() != null ? d.getLocationName() : "the affected region";
+        int affected = d.getAffectedPeople() != null ? d.getAffectedPeople() : 0;
+        String base = d.getDescription() != null && !d.getDescription().isBlank()
+                ? d.getDescription()
+                : "Operations teams are coordinating response across field units and support partners.";
+        return """
+                %s
+
+                Incident intelligence indicates a %s event centered around %s. Current severity is %s and status is %s.
+                Field coordinators have mobilized rescue, shelter, and medical channels while logistics teams prioritize supplies.
+                Estimated affected population currently stands at %d, and this figure will be updated as verification continues.
+
+                Citizens are advised to follow official emergency advisories, avoid blocked routes, and use verified helplines.
+                """.formatted(base, type, location, d.getSeverity(), d.getStatus(), affected);
+    }
+
+    private int progressFromStatus(Disaster.DisasterStatus status) {
+        return switch (status) {
+            case ACTIVE -> 55;
+            case CONTAINED -> 75;
+            case RESOLVED -> 100;
+            default -> 35;
         };
+    }
+
+    private int severityRank(Disaster.Severity severity) {
+        return switch (severity != null ? severity : Disaster.Severity.LOW) {
+            case CRITICAL -> 0;
+            case HIGH -> 1;
+            case MEDIUM -> 2;
+            case LOW -> 3;
+        };
+    }
+
+    private String defaultImageByType(String typeRaw) {
+        String type = typeRaw == null ? "" : typeRaw.toLowerCase();
+        if (type.contains("flood")) return "/assets/news/flood.svg";
+        if (type.contains("fire")) return "/assets/news/fire.svg";
+        if (type.contains("landslide")) return "/assets/news/landslide.svg";
+        if (type.contains("medical")) return "/assets/news/medical.svg";
+        if (type.contains("cyclone")) return "/assets/news/cyclone.svg";
+        if (type.contains("shelter")) return "/assets/news/shelter.svg";
+        return "/assets/news/fallback.svg";
     }
 
     private User currentUser() {
@@ -231,6 +278,8 @@ public class NewsServiceImpl {
                 .latitude(n.getLatitude())
                 .longitude(n.getLongitude())
                 .sourceIncidentId(n.getSourceIncidentId())
+                .affectedPeople(n.getAffectedPeople())
+                .rescueProgress(n.getRescueProgress())
                 .createdBy(n.getCreatedBy() != null ? n.getCreatedBy().getId() : null)
                 .createdByName(n.getCreatedBy() != null ? n.getCreatedBy().getFullName() : "System")
                 .createdAt(n.getCreatedAt())

@@ -25,15 +25,20 @@ public class VolunteerController {
     private final VolunteerServiceImpl volunteerService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR', 'RESPONDER')")
     public ResponseEntity<Page<VolunteerResponse>> getAllVolunteers(
             @RequestParam(required = false) Volunteer.Availability availability,
             @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(volunteerService.getAllVolunteers(availability, pageable));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<VolunteerResponse> getMyVolunteer() {
+        return ResponseEntity.ok(volunteerService.getMyVolunteer());
+    }
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR', 'RESPONDER')")
     public ResponseEntity<VolunteerResponse> getVolunteer(@PathVariable Long id) {
         return ResponseEntity.ok(volunteerService.getVolunteerById(id));
     }
@@ -56,8 +61,14 @@ public class VolunteerController {
         return ResponseEntity.ok(volunteerService.updateAvailability(id, availability));
     }
 
+    @PatchMapping("/me/availability")
+    public ResponseEntity<VolunteerResponse> updateMyAvailability(@RequestBody Map<String, String> body) {
+        Volunteer.Availability availability = Volunteer.Availability.valueOf(body.get("availability"));
+        return ResponseEntity.ok(volunteerService.updateMyAvailability(availability));
+    }
+
     @GetMapping("/nearby")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR', 'RESPONDER')")
     public ResponseEntity<List<VolunteerResponse>> getNearbyVolunteers(
             @RequestParam double lat,
             @RequestParam double lng,

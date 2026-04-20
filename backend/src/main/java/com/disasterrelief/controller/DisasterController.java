@@ -33,6 +33,12 @@ public class DisasterController {
         return ResponseEntity.ok(disasterService.getAllDisasters(status, severity, pageable));
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<Page<DisasterResponse>> getMyDisasters(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(disasterService.getMyDisasters(pageable));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<DisasterResponse> getDisaster(@PathVariable Long id) {
         return ResponseEntity.ok(disasterService.getDisasterById(id));

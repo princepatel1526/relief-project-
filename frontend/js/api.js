@@ -70,6 +70,7 @@ const api = {
   // Disasters
   disasters: {
     list:      (params) => api.get('/disasters', params),
+    mine:      (params) => api.get('/disasters/my', params),
     get:       (id) => api.get(`/disasters/${id}`),
     create:    (body) => api.post('/disasters', body),
     update:    (id, body) => api.put(`/disasters/${id}`, body),
@@ -111,6 +112,7 @@ const api = {
   assignments: {
     create:     (body) => api.post('/assignments', body),
     byDisaster: (disasterId, params) => api.get(`/assignments/disaster/${disasterId}`, params),
+    mine:       (params) => api.get('/assignments/me', params),
     setStatus:  (id, status, hoursLogged) => api.patch(`/assignments/${id}/status`, { status, hoursLogged }),
   },
 

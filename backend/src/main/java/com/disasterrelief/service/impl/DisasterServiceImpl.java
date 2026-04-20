@@ -55,6 +55,14 @@ public class DisasterServiceImpl {
         return toResponse(disaster);
     }
 
+    @Transactional(readOnly = true)
+    public Page<DisasterResponse> getMyDisasters(Pageable pageable) {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", currentUsername));
+        return disasterRepository.findByReportedById(user.getId(), pageable).map(this::toResponse);
+    }
+
     @Transactional
     public DisasterResponse createDisaster(DisasterRequest request) {
         DisasterType type = disasterTypeRepository.findById(request.getDisasterTypeId())

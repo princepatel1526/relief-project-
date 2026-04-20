@@ -59,6 +59,12 @@ public class NewsUpdate {
     @Column(name = "source_incident_id")
     private Long sourceIncidentId;
 
+    @Column(name = "affected_people")
+    private Integer affectedPeople;
+
+    @Column(name = "rescue_progress")
+    private Integer rescueProgress;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;

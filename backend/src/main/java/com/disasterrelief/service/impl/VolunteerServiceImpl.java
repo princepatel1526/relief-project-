@@ -41,6 +41,16 @@ public class VolunteerServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    public VolunteerResponse getMyVolunteer() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+        Volunteer volunteer = volunteerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Volunteer", "userId", user.getId()));
+        return toResponse(volunteer, null);
+    }
+
+    @Transactional(readOnly = true)
     public List<VolunteerResponse> findNearby(double lat, double lng, String skill, int limit) {
         List<Volunteer> volunteers = volunteerRepository.findAvailableVolunteersNearby(
                 lat, lng, skill, PageRequest.of(0, limit));
@@ -80,6 +90,17 @@ public class VolunteerServiceImpl {
         Volunteer volunteer = findById(id);
         volunteer.setAvailability(availability);
         log.info("Volunteer {} availability updated to {}", id, availability);
+        return toResponse(volunteerRepository.save(volunteer), null);
+    }
+
+    @Transactional
+    public VolunteerResponse updateMyAvailability(Volunteer.Availability availability) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+        Volunteer volunteer = volunteerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Volunteer", "userId", user.getId()));
+        volunteer.setAvailability(availability);
         return toResponse(volunteerRepository.save(volunteer), null);
     }
 

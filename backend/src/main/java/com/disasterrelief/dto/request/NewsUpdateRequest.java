@@ -46,5 +46,9 @@ public class NewsUpdateRequest {
 
     private Long sourceIncidentId;
 
+    private Integer affectedPeople;
+
+    private Integer rescueProgress;
+
     private List<@NotBlank String> timelineUpdates;
 }

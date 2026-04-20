@@ -23,6 +23,8 @@ public class NewsUpdateResponse {
     private Double latitude;
     private Double longitude;
     private Long sourceIncidentId;
+    private Integer affectedPeople;
+    private Integer rescueProgress;
     private Long createdBy;
     private String createdByName;
     private LocalDateTime createdAt;

@@ -28,17 +28,19 @@ public class NewsController {
             @RequestParam(required = false) NewsUpdate.NewsStatus status,
             @RequestParam(required = false) Disaster.Severity severity,
             @RequestParam(required = false) String disasterType,
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String sort,
             @RequestParam(required = false, name = "q") String query,
             @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ResponseEntity.ok(newsService.list(status, severity, disasterType, query, pageable));
+        return ResponseEntity.ok(newsService.list(status, severity, disasterType, region, sort, query, pageable));
     }
 
     @GetMapping("/search")
     public ResponseEntity<Page<NewsUpdateResponse>> search(
             @RequestParam(name = "q") String query,
             @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(newsService.list(null, null, null, query, pageable));
+        return ResponseEntity.ok(newsService.list(null, null, null, null, "LATEST", query, pageable));
     }
 
     @GetMapping("/{id}")

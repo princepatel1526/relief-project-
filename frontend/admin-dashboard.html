@@ -181,7 +181,7 @@
 
   <script type="module">
     import api from './js/api.js';
-    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { requireAuth, renderUserInfo, logout as authLogout, hasRole } from './js/auth.js';
     import { showToast, formatCurrency, formatCurrencyCompactIndian, severityBadge, statusBadge, urgencyBar } from './js/utils.js';
     import { connectWebSocket } from './js/websocket.js';
     import './js/profile.js';
@@ -204,6 +204,9 @@
 
     window.logout = authLogout;
     requireAuth();
+    if (!(hasRole('ADMIN') || hasRole('SUPER_ADMIN'))) {
+      window.location.href = '/dashboard.html';
+    }
     renderUserInfo();
     connectWebSocket((n) => {
       document.getElementById('notif-dot')?.classList.remove('hidden');

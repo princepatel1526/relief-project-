@@ -37,6 +37,11 @@ public class AssignmentController {
         return ResponseEntity.ok(assignmentService.getAssignmentsByDisaster(disasterId, pageable));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<Page<AssignmentResponse>> getMine(@PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(assignmentService.getMyAssignments(pageable));
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<AssignmentResponse> updateStatus(
             @PathVariable Long id,
