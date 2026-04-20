@@ -30,10 +30,14 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedRoles() {
         Map<Role.RoleName, String> roles = Map.of(
-            Role.RoleName.ROLE_ADMIN,       "System administrator with full access",
-            Role.RoleName.ROLE_COORDINATOR, "Disaster coordinator managing operations",
-            Role.RoleName.ROLE_VOLUNTEER,   "Field volunteer providing relief",
-            Role.RoleName.ROLE_DONOR,       "Donor contributing resources"
+            Role.RoleName.ROLE_ADMIN,         "System administrator with full access",
+            Role.RoleName.ROLE_SUPER_ADMIN,   "Super administrator with cross-region access",
+            Role.RoleName.ROLE_COORDINATOR,   "Disaster coordinator managing operations",
+            Role.RoleName.ROLE_VOLUNTEER,     "Field volunteer providing relief",
+            Role.RoleName.ROLE_DONOR,         "Donor contributing resources",
+            Role.RoleName.ROLE_CITIZEN,       "Citizen reporting incidents and needs",
+            Role.RoleName.ROLE_RESPONDER,     "Professional first responder",
+            Role.RoleName.ROLE_NGO,           "NGO coordinator managing partner operations"
         );
 
         roles.forEach((name, desc) -> {

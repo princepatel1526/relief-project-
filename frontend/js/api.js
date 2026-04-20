@@ -94,6 +94,7 @@ const api = {
     priority:  (limit = 20) => api.get('/requests/priority', { limit }),
     create:    (body) => api.post('/requests', body),
     setStatus: (id, status) => api.patch(`/requests/${id}/status`, { status }),
+    timeline:  (id) => api.get(`/requests/${id}/timeline`),
   },
 
   // Inventory
@@ -131,7 +132,15 @@ const api = {
 
   // Dashboard
   dashboard: {
-    stats: () => api.get('/admin/stats'),
+    stats:     () => api.get('/admin/stats'),
+    analytics: () => api.get('/admin/stats'), // stats endpoint now includes analytics data
+  },
+
+  // Disaster map data (public)
+  map: {
+    active:  () => api.get('/disasters', { status: 'ACTIVE', size: 200, page: 0 }),
+    all:     (params) => api.get('/disasters', { size: 200, page: 0, ...params }),
+    nearby:  (lat, lng, radiusKm = 100) => api.get('/disasters/nearby', { lat, lng, radiusKm }),
   },
 };
 

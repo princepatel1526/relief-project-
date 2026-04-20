@@ -18,8 +18,12 @@ public class ReliefRequestResponse {
     private Integer urgencyLevel;
     private Integer quantityNeeded;
     private ReliefRequest.RequestStatus status;
+    private Integer priorityScore;
     private String assignedVolunteerName;
     private LocalDateTime fulfilledAt;
     private String notes;
     private LocalDateTime createdAt;
+    private String locationName;
+    private Double latitude;
+    private Double longitude;
 }

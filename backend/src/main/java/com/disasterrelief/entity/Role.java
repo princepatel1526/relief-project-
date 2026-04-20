@@ -26,6 +26,7 @@ public class Role {
     void prePersist() { this.createdAt = LocalDateTime.now(); }
 
     public enum RoleName {
-        ROLE_ADMIN, ROLE_COORDINATOR, ROLE_VOLUNTEER, ROLE_DONOR
+        ROLE_ADMIN, ROLE_COORDINATOR, ROLE_VOLUNTEER, ROLE_DONOR,
+        ROLE_CITIZEN, ROLE_RESPONDER, ROLE_NGO, ROLE_SUPER_ADMIN
     }
 }

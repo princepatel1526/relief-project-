@@ -32,14 +32,27 @@ export function severityBadge(severity) {
 
 export function statusBadge(status) {
   const map = {
+    // Disaster statuses
     ACTIVE: 'badge-active', REPORTED: 'badge-warning',
-    PENDING: 'badge-pending', FULFILLED: 'badge-fulfilled',
+    CONTAINED: 'badge-info', RESOLVED: 'badge-success', CLOSED: 'badge-gray',
+    // Request statuses (8-stage workflow)
+    SUBMITTED: 'badge-info',
+    PENDING_VERIFICATION: 'badge-warning',
+    VERIFIED: 'badge-info',
+    PENDING: 'badge-pending',
+    ASSIGNED: 'badge-info',
+    EN_ROUTE: 'badge-active',
+    IN_PROGRESS: 'badge-active',
+    FULFILLED: 'badge-fulfilled',
+    REJECTED: 'badge-danger',
+    CANCELLED: 'badge-gray',
+    // Payment / other
     CAPTURED: 'badge-success', FAILED: 'badge-danger',
     AVAILABLE: 'badge-success', BUSY: 'badge-warning',
-    COMPLETED: 'badge-success', ASSIGNED: 'badge-info',
-    IN_PROGRESS: 'badge-active',
+    COMPLETED: 'badge-success',
   };
-  return `<span class="badge ${map[status] || 'badge-gray'}">${status?.replace('_', ' ')}</span>`;
+  const label = status?.replace(/_/g, ' ') || status;
+  return `<span class="badge ${map[status] || 'badge-gray'}">${label}</span>`;
 }
 
 export function urgencyBar(level) {

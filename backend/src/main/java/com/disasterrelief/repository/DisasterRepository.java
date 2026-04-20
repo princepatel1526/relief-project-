@@ -39,4 +39,10 @@ public interface DisasterRepository extends JpaRepository<Disaster, Long> {
     long countByStatus(Disaster.DisasterStatus status);
 
     long countBySeverity(Disaster.Severity severity);
+
+    @Query("SELECT d.disasterType.name, COUNT(d) FROM Disaster d GROUP BY d.disasterType.name")
+    List<Object[]> countGroupByType();
+
+    @Query("SELECT d.severity, COUNT(d) FROM Disaster d GROUP BY d.severity")
+    List<Object[]> countGroupBySeverity();
 }

@@ -114,11 +114,15 @@ public class AuthServiceImpl {
     }
 
     private Role.RoleName resolveRole(String roleInput) {
-        if (roleInput == null || roleInput.isBlank()) return Role.RoleName.ROLE_VOLUNTEER;
-        return switch (roleInput.toUpperCase()) {
+        if (roleInput == null || roleInput.isBlank()) return Role.RoleName.ROLE_CITIZEN;
+        return switch (roleInput.toUpperCase().replace("ROLE_", "")) {
             case "ADMIN"       -> Role.RoleName.ROLE_ADMIN;
+            case "SUPER_ADMIN" -> Role.RoleName.ROLE_SUPER_ADMIN;
             case "COORDINATOR" -> Role.RoleName.ROLE_COORDINATOR;
             case "DONOR"       -> Role.RoleName.ROLE_DONOR;
+            case "RESPONDER"   -> Role.RoleName.ROLE_RESPONDER;
+            case "NGO"         -> Role.RoleName.ROLE_NGO;
+            case "CITIZEN"     -> Role.RoleName.ROLE_CITIZEN;
             default            -> Role.RoleName.ROLE_VOLUNTEER;
         };
     }

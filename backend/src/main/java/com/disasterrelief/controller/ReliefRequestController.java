@@ -3,6 +3,7 @@ package com.disasterrelief.controller;
 import com.disasterrelief.dto.request.ReliefRequestDto;
 import com.disasterrelief.dto.response.ReliefRequestResponse;
 import com.disasterrelief.entity.ReliefRequest;
+import com.disasterrelief.entity.StatusHistory;
 import com.disasterrelief.service.impl.ReliefRequestServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class ReliefRequestController {
     public ResponseEntity<Page<ReliefRequestResponse>> getAllRequests(
             @RequestParam(required = false) Long disasterId,
             @RequestParam(required = false) ReliefRequest.RequestStatus status,
-            @PageableDefault(size = 20, sort = "urgencyLevel", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "priorityScore", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(requestService.getAllRequests(disasterId, status, pageable));
     }
 
@@ -36,6 +37,11 @@ public class ReliefRequestController {
     public ResponseEntity<List<ReliefRequestResponse>> getPriorityRequests(
             @RequestParam(defaultValue = "20") int limit) {
         return ResponseEntity.ok(requestService.getPendingByPriority(limit));
+    }
+
+    @GetMapping("/{id}/timeline")
+    public ResponseEntity<List<StatusHistory>> getTimeline(@PathVariable Long id) {
+        return ResponseEntity.ok(requestService.getTimeline(id));
     }
 
     @PostMapping

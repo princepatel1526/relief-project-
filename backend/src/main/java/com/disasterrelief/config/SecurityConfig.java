@@ -67,20 +67,26 @@ public class SecurityConfig {
                     .hasAnyRole("ADMIN", "COORDINATOR")
                 .requestMatchers("/api/admin/**")
                     .hasAnyRole("ADMIN", "COORDINATOR")
-                // Volunteers, Coordinators, Admins can report/update disasters — Donors cannot
+                // Citizens can submit relief requests and view disasters
+                .requestMatchers(HttpMethod.POST, "/api/requests")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "CITIZEN", "RESPONDER", "NGO")
+                // Volunteers, Coordinators, Admins, Responders, NGOs can report/update disasters — Donors/Citizens cannot
                 .requestMatchers(HttpMethod.POST,   "/api/disasters/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO")
                 .requestMatchers(HttpMethod.PUT,    "/api/disasters/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO")
                 .requestMatchers(HttpMethod.PATCH,  "/api/disasters/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
+                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER", "NGO")
                 .requestMatchers(HttpMethod.DELETE, "/api/disasters/**")
-                    .hasRole("ADMIN")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/assignments/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR")
-                // Volunteers, Coordinators, Admins can manage inventory — Donors cannot
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR")
+                // Volunteers, Coordinators, Admins, Responders can manage inventory — Donors/Citizens cannot
                 .requestMatchers("/api/inventory/**")
-                    .hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR", "VOLUNTEER", "RESPONDER")
+                // Analytics — coordinators and above
+                .requestMatchers("/api/admin/analytics")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "COORDINATOR", "NGO")
 
                 // ── Everything else requires login ────────────────────────────
                 .anyRequest().authenticated()

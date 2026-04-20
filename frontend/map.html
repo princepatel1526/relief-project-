@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Map | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/sp38=" crossorigin=""></script>
+  <style>
+    .map-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 16px;
+      height: calc(100vh - 130px);
+      overflow: hidden;
+    }
+    @media (max-width: 900px) {
+      .map-layout { grid-template-columns: 1fr; height: auto; }
+    }
+    #leaflet-map {
+      height: 100%;
+      min-height: 400px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      z-index: 1;
+    }
+    .map-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+    .filter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .filter-card h4 {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 10px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 8px; cursor: pointer;
+      font-size: 12.5px; font-weight: 500; border: none;
+      background: var(--surface-alt); color: var(--text);
+      transition: background var(--ease);
+      text-align: left; width: 100%;
+    }
+    .filter-btn:hover { background: var(--border); }
+    .filter-btn.active { background: var(--primary); color: #fff; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .dot-critical { background: #a8281a; }
+    .dot-high     { background: #c9650a; }
+    .dot-medium   { background: #8a5a00; }
+    .dot-low      { background: #2c4a2c; }
+    .dot-all      { background: var(--text); }
+    .incident-list { flex: 1; overflow-y: auto; }
+    .incident-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      transition: border-color var(--ease), box-shadow var(--ease);
+      margin-bottom: 8px;
+    }
+    .incident-item:hover {
+      border-color: var(--border-strong);
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    .incident-item h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .incident-item p  { font-size: 11.5px; color: var(--text-muted); }
+    .legend-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-secondary); margin-bottom: 6px; }
+    .map-stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .map-stat { background: var(--surface-alt); border-radius: 8px; padding: 10px; text-align: center; }
+    .map-stat-val { font-size: 20px; font-weight: 800; color: var(--text); }
+    .map-stat-lbl { font-size: 10.5px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🚨</div>
+      <div><h1>Relief Platform</h1><span>Emergency Coordination</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="analytics.html" class="nav-link"><span class="icon">📈</span> Analytics</a>
+        <a href="map.html" class="nav-link active"><span class="icon">🗺️</span> Live Map</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Operations</div>
+        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
+        <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Resources</div>
+        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title">🗺️ Live Incident Map</h2>
+      <div class="topbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="refreshMap()">🔄 Refresh</button>
+        <button class="btn btn-outline btn-sm" onclick="locateMe()">📍 My Location</button>
+        <div class="user-menu">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <div><div class="user-name" id="user-name">Loading…</div><div class="user-role" id="user-role"></div></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="map-layout">
+
+        <!-- Left: Filters + List -->
+        <div class="map-sidebar">
+          <div class="filter-card">
+            <h4>Filter by Severity</h4>
+            <div class="filter-group">
+              <button class="filter-btn active" id="filter-all" onclick="setFilter('ALL')">
+                <span class="dot dot-all"></span> All Incidents
+              </button>
+              <button class="filter-btn" id="filter-CRITICAL" onclick="setFilter('CRITICAL')">
+                <span class="dot dot-critical"></span> Critical
+              </button>
+              <button class="filter-btn" id="filter-HIGH" onclick="setFilter('HIGH')">
+                <span class="dot dot-high"></span> High
+              </button>
+              <button class="filter-btn" id="filter-MEDIUM" onclick="setFilter('MEDIUM')">
+                <span class="dot dot-medium"></span> Medium
+              </button>
+              <button class="filter-btn" id="filter-LOW" onclick="setFilter('LOW')">
+                <span class="dot dot-low"></span> Low
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-card">
+            <h4>Summary</h4>
+            <div class="map-stats" id="map-stats">
+              <div class="map-stat"><div class="map-stat-val" id="ms-total">—</div><div class="map-stat-lbl">Total</div></div>
+              <div class="map-stat"><div class="map-stat-val" id="ms-active">—</div><div class="map-stat-lbl">Active</div></div>
+              <div class="map-stat"><div class="map-stat-val" id="ms-critical">—</div><div class="map-stat-lbl">Critical</div></div>
+              <div class="map-stat"><div class="map-stat-val" id="ms-people">—</div><div class="map-stat-lbl">Affected</div></div>
+            </div>
+          </div>
+
+          <div class="filter-card" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0;">
+            <h4>Incidents <span id="incident-count" style="font-weight:400; text-transform:none; letter-spacing:0;"></span></h4>
+            <div class="incident-list" id="incident-list">
+              <div class="loading-overlay"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Map -->
+        <div id="leaflet-map"></div>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="toast-container"></div>
+
+<script type="module">
+  import api from './js/api.js';
+  import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+  import { showToast, severityBadge } from './js/utils.js';
+  import './js/profile.js';
+
+  window.logout = authLogout;
+  requireAuth();
+  renderUserInfo();
+
+  // ── Map init ────────────────────────────────────────────────────────────
+  const map = L.map('leaflet-map').setView([20.5937, 78.9629], 5); // India centre
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(map);
+
+  const SEVERITY_CONFIG = {
+    CRITICAL: { color: '#a8281a', radius: 14, fillOpacity: 0.85 },
+    HIGH:     { color: '#c9650a', radius: 11, fillOpacity: 0.80 },
+    MEDIUM:   { color: '#8a5a00', radius: 9,  fillOpacity: 0.75 },
+    LOW:      { color: '#2c4a2c', radius: 7,  fillOpacity: 0.70 },
+  };
+
+  let allDisasters = [];
+  let markers      = [];
+  let currentFilter = 'ALL';
+
+  function clearMarkers() {
+    markers.forEach(m => m.remove());
+    markers = [];
+  }
+
+  function renderMarkers(disasters) {
+    clearMarkers();
+    disasters.forEach(d => {
+      if (!d.latitude || !d.longitude) return;
+      const cfg = SEVERITY_CONFIG[d.severity] || SEVERITY_CONFIG.MEDIUM;
+      const circle = L.circleMarker([d.latitude, d.longitude], {
+        radius: cfg.radius,
+        fillColor: cfg.color,
+        color: '#fff',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: cfg.fillOpacity,
+      }).addTo(map);
+
+      circle.bindPopup(`
+        <div style="min-width:200px; font-family:inherit">
+          <strong style="font-size:13px;">${d.title}</strong>
+          <div style="margin:4px 0; display:flex; gap:6px; flex-wrap:wrap;">
+            <span style="background:${cfg.color};color:#fff;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;">${d.severity}</span>
+            <span style="background:#f0ede8;color:#4a4845;padding:2px 7px;border-radius:20px;font-size:11px;">${d.status}</span>
+          </div>
+          <div style="font-size:12px;color:#6c6a64;margin-top:4px;">
+            📍 ${d.locationName || 'Location unavailable'}<br>
+            👥 ${(d.affectedPeople || 0).toLocaleString()} affected<br>
+            🏷️ ${d.disasterType?.name || d.type || ''}
+          </div>
+          <a href="disasters.html" style="display:block;margin-top:8px;font-size:11.5px;color:#1a4080;text-decoration:none;font-weight:600;">
+            View details →
+          </a>
+        </div>
+      `);
+
+      markers.push(circle);
+    });
+  }
+
+  function renderList(disasters) {
+    const el = document.getElementById('incident-list');
+    document.getElementById('incident-count').textContent = `(${disasters.length})`;
+    if (!disasters.length) {
+      el.innerHTML = '<div class="empty-state" style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No incidents match the filter</div>';
+      return;
+    }
+    el.innerHTML = disasters.map(d => {
+      const cfg = SEVERITY_CONFIG[d.severity] || SEVERITY_CONFIG.MEDIUM;
+      return `<div class="incident-item" onclick="flyTo(${d.latitude},${d.longitude})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">
+          <h4 style="margin:0">${d.title}</h4>
+          <span style="background:${cfg.color};color:#fff;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:700;flex-shrink:0;">${d.severity}</span>
+        </div>
+        <p>📍 ${d.locationName || '—'} &nbsp;·&nbsp; 👥 ${(d.affectedPeople||0).toLocaleString()}</p>
+      </div>`;
+    }).join('');
+  }
+
+  function applyFilter() {
+    const filtered = currentFilter === 'ALL'
+      ? allDisasters
+      : allDisasters.filter(d => d.severity === currentFilter);
+    renderMarkers(filtered);
+    renderList(filtered);
+  }
+
+  window.setFilter = function(severity) {
+    currentFilter = severity;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-' + (severity === 'ALL' ? 'all' : severity))?.classList.add('active');
+    applyFilter();
+  };
+
+  window.flyTo = function(lat, lng) {
+    if (lat && lng) map.flyTo([lat, lng], 10, { duration: 1.2 });
+  };
+
+  window.locateMe = function() {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        map.flyTo([pos.coords.latitude, pos.coords.longitude], 10);
+        L.marker([pos.coords.latitude, pos.coords.longitude])
+          .bindPopup('<b>📍 Your Location</b>').addTo(map).openPopup();
+      }, () => showToast('Location access denied', 'error'));
+    } else {
+      showToast('Geolocation not supported', 'error');
+    }
+  };
+
+  window.refreshMap = loadMap;
+
+  async function loadMap() {
+    try {
+      const res = await api.map.all();
+      allDisasters = res.content || [];
+
+      // Stats
+      document.getElementById('ms-total').textContent    = allDisasters.length;
+      document.getElementById('ms-active').textContent   = allDisasters.filter(d => d.status === 'ACTIVE').length;
+      document.getElementById('ms-critical').textContent = allDisasters.filter(d => d.severity === 'CRITICAL').length;
+      const totalPeople = allDisasters.reduce((s, d) => s + (d.affectedPeople || 0), 0);
+      document.getElementById('ms-people').textContent   = totalPeople >= 1000
+        ? (totalPeople / 1000).toFixed(1) + 'k' : totalPeople;
+
+      applyFilter();
+    } catch (err) {
+      showToast('Failed to load map data: ' + err.message, 'error');
+      document.getElementById('incident-list').innerHTML =
+        '<p style="padding:16px;color:var(--danger);font-size:13px;">Failed to load incidents.</p>';
+    }
+  }
+
+  loadMap();
+  setInterval(loadMap, 30000); // refresh every 30s
+</script>
+</body>
+</html>

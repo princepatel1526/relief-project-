@@ -18,16 +18,16 @@ public interface ReliefRequestRepository extends JpaRepository<ReliefRequest, Lo
 
     @Query("""
         SELECT r FROM ReliefRequest r
-        WHERE r.status = 'PENDING'
-        ORDER BY r.urgencyLevel DESC, r.createdAt ASC
+        WHERE r.status IN ('PENDING', 'SUBMITTED', 'PENDING_VERIFICATION')
+        ORDER BY r.priorityScore DESC, r.urgencyLevel DESC, r.createdAt ASC
         """)
     List<ReliefRequest> findPendingRequestsByPriority(Pageable pageable);
 
     @Query("""
         SELECT r FROM ReliefRequest r
         WHERE r.disaster.id = :disasterId
-        AND r.status IN ('PENDING', 'ASSIGNED', 'IN_PROGRESS')
-        ORDER BY r.urgencyLevel DESC, r.createdAt ASC
+        AND r.status IN ('PENDING', 'SUBMITTED', 'PENDING_VERIFICATION', 'VERIFIED', 'ASSIGNED', 'EN_ROUTE', 'IN_PROGRESS')
+        ORDER BY r.priorityScore DESC, r.urgencyLevel DESC, r.createdAt ASC
         """)
     List<ReliefRequest> findActiveRequestsByDisaster(@Param("disasterId") Long disasterId, Pageable pageable);
 
@@ -36,4 +36,20 @@ public interface ReliefRequestRepository extends JpaRepository<ReliefRequest, Lo
     long countByStatus(ReliefRequest.RequestStatus status);
 
     long countByDisasterIdAndStatus(Long disasterId, ReliefRequest.RequestStatus status);
+
+    @Query("SELECT r.requestType, COUNT(r) FROM ReliefRequest r GROUP BY r.requestType")
+    List<Object[]> countGroupByType();
+
+    @Query("SELECT r.status, COUNT(r) FROM ReliefRequest r GROUP BY r.status")
+    List<Object[]> countGroupByStatus();
+
+    @Query("SELECT AVG(r.priorityScore) FROM ReliefRequest r WHERE r.priorityScore > 0")
+    Double avgPriorityScore();
+
+    @Query("""
+        SELECT r FROM ReliefRequest r
+        WHERE r.status IN ('PENDING', 'SUBMITTED', 'PENDING_VERIFICATION')
+        ORDER BY r.priorityScore DESC, r.urgencyLevel DESC, r.createdAt ASC
+        """)
+    List<ReliefRequest> findByPriorityScore(Pageable pageable);
 }

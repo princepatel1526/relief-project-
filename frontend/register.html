@@ -147,15 +147,23 @@
       <div class="role-list">
         <div class="role-item">
           <div class="role-dot"></div>
-          <span><strong style="color:#c8c5be">Admin</strong> — Full system access</span>
-        </div>
-        <div class="role-item">
-          <div class="role-dot"></div>
-          <span><strong style="color:#c8c5be">Coordinator</strong> — Manage operations & teams</span>
+          <span><strong style="color:#c8c5be">Citizen</strong> — Report incidents &amp; request help</span>
         </div>
         <div class="role-item">
           <div class="role-dot"></div>
           <span><strong style="color:#c8c5be">Volunteer</strong> — Field relief worker</span>
+        </div>
+        <div class="role-item">
+          <div class="role-dot"></div>
+          <span><strong style="color:#c8c5be">Responder</strong> — Professional first responder</span>
+        </div>
+        <div class="role-item">
+          <div class="role-dot"></div>
+          <span><strong style="color:#c8c5be">NGO</strong> — Partner organisation coordinator</span>
+        </div>
+        <div class="role-item">
+          <div class="role-dot"></div>
+          <span><strong style="color:#c8c5be">Coordinator</strong> — Manage operations &amp; teams</span>
         </div>
         <div class="role-item">
           <div class="role-dot"></div>
@@ -217,7 +225,10 @@
         <div class="form-group" style="margin-top:13px">
           <label class="form-label">Role</label>
           <select class="form-control" name="role" id="role-select">
+            <option value="CITIZEN">Citizen — Report incidents & request help</option>
             <option value="VOLUNTEER">Volunteer — Field relief worker</option>
+            <option value="RESPONDER">Responder — Professional first responder</option>
+            <option value="NGO">NGO Coordinator — Partner organisation</option>
             <option value="COORDINATOR">Coordinator — Manage operations</option>
             <option value="DONOR">Donor — Contribute resources</option>
           </select>
@@ -237,7 +248,10 @@
   <script>
     // Role hints
     const hints = {
+      CITIZEN:     'Citizens can report incidents, request help, and track response progress.',
       VOLUNTEER:   'Volunteers assist directly in field operations and disaster zones.',
+      RESPONDER:   'Professional first responders with specialised emergency training.',
+      NGO:         'NGO coordinators manage partner organisation relief operations.',
       COORDINATOR: 'Coordinators manage teams, assignments, and operational workflows.',
       DONOR:       'Donors contribute financial or material resources to relief efforts.',
     };
