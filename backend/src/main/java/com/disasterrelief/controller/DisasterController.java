@@ -33,26 +33,32 @@ public class DisasterController {
         return ResponseEntity.ok(disasterService.getAllDisasters(status, severity, pageable));
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<Page<DisasterResponse>> getMyDisasters(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(disasterService.getMyDisasters(pageable));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<DisasterResponse> getDisaster(@PathVariable Long id) {
         return ResponseEntity.ok(disasterService.getDisasterById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<DisasterResponse> createDisaster(@Valid @RequestBody DisasterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(disasterService.createDisaster(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<DisasterResponse> updateDisaster(@PathVariable Long id,
                                                              @Valid @RequestBody DisasterRequest request) {
         return ResponseEntity.ok(disasterService.updateDisaster(id, request));
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<DisasterResponse> updateStatus(@PathVariable Long id,
                                                           @RequestBody Map<String, String> body) {
         Disaster.DisasterStatus status = Disaster.DisasterStatus.valueOf(body.get("status"));

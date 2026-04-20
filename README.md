@@ -36,13 +36,47 @@ docker-compose up -d
 Backend: http://localhost:8080/api  
 Frontend: open `frontend/index.html` in browser (or use Live Server)
 
+### Option A+ — One-command local dev with auto-ngrok (payments/webhook)
+
+This project’s webhook endpoint (`POST /api/payments/webhook`) must be publicly reachable for Razorpay webhook callbacks during local development.
+Use the helper script below to start MySQL + backend + frontend static server + ngrok together:
+
+```bash
+./scripts/dev-up.sh
+```
+
+The script prints:
+- Frontend URL
+- Backend URL
+- ngrok public URL
+- exact webhook URL to configure in Razorpay dashboard
+
+Stop everything with `Ctrl+C` (graceful shutdown) or:
+
+```bash
+./scripts/dev-down.sh
+```
+
 ### Option B — Manual Setup
 
 **1. MySQL**
 ```sql
 -- Run schema and seed
 mysql -u root -p < backend/src/main/resources/db/schema.sql
+mysql -u root -p disaster_relief_db < backend/src/main/resources/db/migration/V20260420_01__roles_name_to_varchar_and_standardize.sql
 mysql -u root -p disaster_relief_db < backend/src/main/resources/db/seed.sql
+```
+
+### Demo reset/reseed (presentation data)
+
+Use the demo seed to populate realistic India-focused activity across incidents, assignments, inventory, shelters, notifications, audit logs, and donations.
+
+```bash
+# Reset only demo seed data (safe to run repeatedly)
+mysql -u root -p disaster_relief_db < backend/src/main/resources/db/reset_demo.sql
+
+# Re-apply rich demo data (idempotent inserts)
+mysql -u root -p disaster_relief_db < backend/src/main/resources/db/seed_demo.sql
 ```
 
 **2. Configure `application.properties`**
@@ -72,9 +106,12 @@ Open `frontend/index.html` via VS Code Live Server or any static file server.
 
 | Role        | Username      | Password      |
 |-------------|---------------|---------------|
-| Admin       | `admin`       | `password123` |
-| Coordinator | `coordinator1`| `password123` |
+| Citizen     | `citizen1`    | `password123` |
 | Volunteer   | `volunteer1`  | `password123` |
+| Responder   | `responder1`  | `password123` |
+| NGO Coordinator | `ngo_coord1`| `password123` |
+| Admin       | `admin`       | `password123` |
+| Super Admin | `superadmin`  | `password123` |
 
 ---
 
@@ -89,10 +126,20 @@ POST /api/auth/register     — Register
 ### Disasters
 ```
 GET    /api/disasters              — List (filterable by status, severity, paginated)
-POST   /api/disasters              — Create (Admin/Coordinator)
+POST   /api/disasters              — Create (Admin/NGO Coordinator/Super Admin)
 PUT    /api/disasters/{id}         — Update
 PATCH  /api/disasters/{id}/status  — Update status
 GET    /api/disasters/nearby       — Geo-query (?lat=&lng=&radiusKm=)
+```
+
+### News / Live Updates
+```
+GET    /api/news                   — Public feed (supports status/severity/disasterType/q)
+GET    /api/news/{id}              — Public detail
+GET    /api/news/search?q=...      — Public keyword search
+POST   /api/news                   — Publish (ADMIN/SUPER_ADMIN/NGO_COORDINATOR)
+PUT    /api/news/{id}              — Edit (ADMIN/SUPER_ADMIN/NGO_COORDINATOR)
+DELETE /api/news/{id}              — Remove (ADMIN/SUPER_ADMIN/NGO_COORDINATOR)
 ```
 
 ### Payments (Razorpay)
@@ -120,7 +167,7 @@ PATCH  /api/inventory/{id}/quantity — Update quantity (ADD/SUBTRACT/SET)
 
 ### Assignments
 ```
-POST   /api/assignments               — Create (Admin/Coordinator)
+POST   /api/assignments               — Create (Admin/NGO Coordinator/Super Admin)
 GET    /api/assignments/disaster/{id} — By disaster
 PATCH  /api/assignments/{id}/status   — Update status
 ```

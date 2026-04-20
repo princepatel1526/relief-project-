@@ -80,7 +80,7 @@ public class NotificationService {
     public void sendLowStockAlert(Inventory inventory) {
         userRepository.findAll().stream()
                 .filter(u -> u.getRoles().stream()
-                        .anyMatch(r -> r.getName() == Role.RoleName.ROLE_ADMIN || r.getName() == Role.RoleName.ROLE_COORDINATOR))
+                        .anyMatch(r -> r.getName() == Role.RoleName.ROLE_ADMIN || r.getName() == Role.RoleName.ROLE_NGO_COORDINATOR))
                 .forEach(admin -> {
                     Notification notification = Notification.builder()
                             .user(admin)

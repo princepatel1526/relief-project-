@@ -4,28 +4,38 @@ USE disaster_relief_db;
 -- SEED ROLES
 -- =============================================
 INSERT IGNORE INTO roles (name, description) VALUES
-('ROLE_ADMIN', 'System administrator with full access'),
-('ROLE_COORDINATOR', 'Disaster coordinator managing operations'),
+('ROLE_CITIZEN', 'Citizen reporting incidents and requesting support'),
 ('ROLE_VOLUNTEER', 'Field volunteer providing relief'),
-('ROLE_DONOR', 'Donor contributing resources');
+('ROLE_RESPONDER', 'Professional first responder'),
+('ROLE_NGO_COORDINATOR', 'NGO coordinator managing partner operations'),
+('ROLE_ADMIN', 'System administrator with operational access'),
+('ROLE_SUPER_ADMIN', 'Super administrator with full cross-region access');
 
 -- =============================================
 -- SEED USERS (password = "password123" BCrypt encoded)
 -- =============================================
 INSERT IGNORE INTO users (username, email, password, full_name, phone, is_active) VALUES
 ('admin',       'admin@disasterrelief.org',      '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'System Admin',        '9000000001', TRUE),
-('coordinator1','coordinator@disasterrelief.org','$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Rahul Coordinator',   '9000000002', TRUE),
+('superadmin',  'superadmin@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Global Super Admin',  '9000000009', TRUE),
+('ngo_coord1',  'ngo.coord@disasterrelief.org',  '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Rahul NGO Coordinator','9000000002', TRUE),
 ('volunteer1',  'volunteer1@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Priya Sharma',        '9000000003', TRUE),
 ('volunteer2',  'volunteer2@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Amit Kumar',          '9000000004', TRUE),
-('donor1',      'donor1@example.com',            '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Sneha Donor',         '9000000005', TRUE);
+('responder1',  'responder1@disasterrelief.org', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Riya Responder',      '9000000008', TRUE),
+('citizen1',    'citizen1@example.com',          '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4tbQV.2U.i', 'Sneha Citizen',       '9000000005', TRUE);
 
 -- Assign roles
-INSERT IGNORE INTO user_roles (user_id, role_id) VALUES
-(1, 1), -- admin -> ROLE_ADMIN
-(2, 2), -- coordinator -> ROLE_COORDINATOR
-(3, 3), -- volunteer1 -> ROLE_VOLUNTEER
-(4, 3), -- volunteer2 -> ROLE_VOLUNTEER
-(5, 4); -- donor -> ROLE_DONOR
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_ADMIN' WHERE u.username = 'admin';
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_SUPER_ADMIN' WHERE u.username = 'superadmin';
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_NGO_COORDINATOR' WHERE u.username = 'ngo_coord1';
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_VOLUNTEER' WHERE u.username IN ('volunteer1', 'volunteer2');
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_RESPONDER' WHERE u.username = 'responder1';
+INSERT IGNORE INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'ROLE_CITIZEN' WHERE u.username = 'citizen1';
 
 -- =============================================
 -- SEED DISASTER TYPES
@@ -100,3 +110,30 @@ INSERT IGNORE INTO inventory (item_name, category, quantity, unit, location_id, 
 ('Bread Loaves',           'FOOD',     200,  'loaves',  3, 2, 20),
 ('Drinking Water (5L)',    'WATER',    300,  'cans',    3, 2, 30),
 ('Sleeping Bags',          'SHELTER',  80,   'pieces',  4, 2, 10);
+
+-- =============================================
+-- SEED NEWS FEED
+-- =============================================
+INSERT INTO news_updates (title, summary, content, image_url, disaster_type, severity, status, location, latitude, longitude, source_incident_id, affected_people, rescue_progress, created_by)
+SELECT
+  'Mumbai Coastal Flooding: Evacuation Corridors Open',
+  'Response teams opened high-ground evacuation corridors and expanded shelter capacity in Mumbai coastal zones.',
+  'Emergency teams have deployed boats and medical units across high-impact wards. Supply routes remain open and water levels are being monitored hourly. Citizens are advised to follow official alerts and avoid submerged roads.',
+  'https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=1400&q=80',
+  'Flood',
+  'CRITICAL',
+  'ACTIVE',
+  'Mumbai, Maharashtra',
+  19.0760,
+  72.8777,
+  1,
+  5000,
+  58,
+  1
+WHERE NOT EXISTS (SELECT 1 FROM news_updates WHERE title = 'Mumbai Coastal Flooding: Evacuation Corridors Open');
+
+INSERT INTO news_timeline_updates (news_id, update_text, update_timestamp)
+SELECT n.id, 'Initial emergency bulletin released; shelters activated.', DATE_SUB(NOW(), INTERVAL 6 HOUR)
+FROM news_updates n
+WHERE n.title = 'Mumbai Coastal Flooding: Evacuation Corridors Open'
+  AND NOT EXISTS (SELECT 1 FROM news_timeline_updates t WHERE t.news_id = n.id);

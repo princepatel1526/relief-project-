@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Role Dashboard | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script defer src="js/icons-init.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><i data-lucide="shield-alert"></i></div>
+        <div><h1>Relief Platform</h1><span>Role Workspace</span></div>
+      </div>
+      <nav class="sidebar-nav" id="role-nav"></nav>
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="btn btn-outline" style="width:100%"><i data-lucide="log-out"></i> Logout</button>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title" id="dash-title">Dashboard</h2>
+        <div class="topbar-actions">
+          <a href="news.html" class="btn btn-outline"><i data-lucide="newspaper"></i> News</a>
+          <div class="user-menu">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div><div class="user-name" id="user-name">User</div><div class="user-role" id="user-role">Role</div></div>
+          </div>
+        </div>
+      </header>
+      <main class="page-content">
+        <div class="stats-grid" id="quick-stats"></div>
+        <div class="card" style="margin-top:18px">
+          <div class="card-header"><h3 id="panel-title">Role Snapshot</h3></div>
+          <div id="role-panel"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { requireAuth, renderUserInfo, logout as authLogout, getPrimaryRole, hasRole } from './js/auth.js';
+    import { formatDate, showToast } from './js/utils.js';
+    import './js/profile.js';
+
+    window.logout = authLogout;
+    requireAuth();
+    renderUserInfo();
+
+    const role = getPrimaryRole();
+    const nav = document.getElementById('role-nav');
+    const stats = document.getElementById('quick-stats');
+    const panel = document.getElementById('role-panel');
+    const title = document.getElementById('dash-title');
+
+    function navLink(href, icon, text) {
+      return `<a href="${href}" class="nav-link"><span class="icon"><i data-lucide="${icon}"></i></span>${text}</a>`;
+    }
+
+    function renderNav() {
+      let links = [navLink('news.html','newspaper','News / Live Updates')];
+      if (role === 'ROLE_CITIZEN') links.push(navLink('incident-report.html','file-pen-line','Create Disaster Report'), navLink('donations.html','hand-coins','Donations'));
+      if (role === 'ROLE_VOLUNTEER') links.push(navLink('assignments.html','list-checks','Assigned Tasks'), navLink('map.html','map','Nearby Incidents'));
+      if (role === 'ROLE_RESPONDER') links.push(navLink('assignments.html','ambulance','Emergency Assignments'), navLink('relief-requests.html','siren','Priority Queue'));
+      if (role === 'ROLE_NGO_COORDINATOR') links.push(navLink('inventory.html','package','Inventory'), navLink('volunteers.html','users','Volunteer Pool'), navLink('news.html','pen-square','Publish News'));
+      if (role === 'ROLE_ADMIN' || role === 'ROLE_SUPER_ADMIN') links.push(navLink('admin-dashboard.html','layout-dashboard','Admin Dashboard'), navLink('analytics.html','line-chart','Analytics'));
+      nav.innerHTML = `<div class="nav-section"><div class="nav-section-label">Workspace</div>${links.join('')}</div>`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function statCard(label, val, icon) {
+      return `<div class="stat-card"><div class="stat-icon blue"><i data-lucide="${icon}"></i></div><div><div class="stat-value">${val}</div><div class="stat-label">${label}</div></div></div>`;
+    }
+
+    async function loadCitizen() {
+      title.textContent = 'Citizen Dashboard';
+      const [fallbackReports, myReports, news, alerts] = await Promise.all([
+        api.disasters.list({ page:0, size:5 }).catch(()=>({content:[]})),
+        api.disasters.mine({ page:0, size:5 }).catch(()=>null),
+        api.news.list({ page:0, size:5, sort:'LATEST' }),
+        api.notifications.list({ page:0, size:5 })
+      ]);
+      const mine = myReports?.content ? myReports : fallbackReports;
+      stats.innerHTML = statCard('My Reports', mine.content?.length || 0, 'file-warning') + statCard('Latest Alerts', alerts.content?.length || 0, 'bell') + statCard('Live Updates', news.content?.length || 0, 'newspaper');
+      panel.innerHTML = `<ul>${(mine.content||[]).map(x=>`<li><strong>${x.title}</strong> • ${x.status} • ${formatDate(x.createdAt)}</li>`).join('') || '<li>No personal reports yet.</li>'}</ul>`;
+    }
+
+    async function loadVolunteer() {
+      title.textContent = 'Volunteer Dashboard';
+      const [assignments, incidents] = await Promise.all([
+        api.assignments.mine({page:0,size:5}).catch(()=>({content:[]})),
+        api.disasters.list({ status:'ACTIVE', page:0, size:5 })
+      ]);
+      stats.innerHTML = statCard('Assigned Tasks', assignments.content?.length || 0, 'list-checks') + statCard('Nearby/Active Incidents', incidents.content?.length || 0, 'map-pin') + statCard('Availability', 'Toggle', 'toggle-right');
+      panel.innerHTML = `<p>Use <a href="assignments.html">Assignments</a> for completion updates and <a href="map.html">Live Map</a> for nearby incidents.</p>`;
+    }
+
+    async function loadResponder() {
+      title.textContent = 'Responder Dashboard';
+      const [priority, myAssignments] = await Promise.all([
+        api.requests.priority(10),
+        api.assignments.mine({page:0,size:5}).catch(()=>({content:[]}))
+      ]);
+      stats.innerHTML = statCard('Priority Queue', priority.length || 0, 'siren') + statCard('Emergency Assignments', myAssignments.content?.length || 0, 'ambulance') + statCard('Route/Location', 'Live', 'navigation');
+      panel.innerHTML = `<ul>${(priority||[]).slice(0,5).map(r=>`<li>${r.requestType} • Urgency ${r.urgencyLevel} • ${r.status}</li>`).join('') || '<li>No priority requests.</li>'}</ul>`;
+    }
+
+    async function loadNGO() {
+      title.textContent = 'NGO Coordinator Dashboard';
+      const [inventory, volunteers, donations] = await Promise.all([
+        api.inventory.list({ page:0, size:5 }),
+        api.volunteers.list({ page:0, size:5 }).catch(()=>({content:[]})),
+        api.donations.list({ page:0, size:5 }).catch(()=>([]))
+      ]);
+      stats.innerHTML = statCard('Resources Inventory', inventory.content?.length || 0, 'package') + statCard('Volunteer Pool', volunteers.content?.length || 0, 'users') + statCard('Donations', donations.content?.length || 0, 'hand-coins');
+      panel.innerHTML = `<p>Use <a href="news.html">News / Live Updates</a> to publish verified updates, and <a href="inventory.html">Inventory</a> to manage resources.</p>`;
+    }
+
+    async function loadRoleDashboard() {
+      renderNav();
+      try {
+        if (role === 'ROLE_CITIZEN') return await loadCitizen();
+        if (role === 'ROLE_VOLUNTEER') return await loadVolunteer();
+        if (role === 'ROLE_RESPONDER') return await loadResponder();
+        if (role === 'ROLE_NGO_COORDINATOR') return await loadNGO();
+        if (role === 'ROLE_ADMIN' || role === 'ROLE_SUPER_ADMIN') {
+          window.location.href = '/admin-dashboard.html';
+          return;
+        }
+        showToast('Unknown role; redirecting to news.', 'warning');
+        window.location.href = '/news.html';
+      } catch (e) {
+        panel.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+      }
+    }
+
+    loadRoleDashboard();
+  </script>
+</body>
+</html>

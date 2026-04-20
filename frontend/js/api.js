@@ -70,6 +70,7 @@ const api = {
   // Disasters
   disasters: {
     list:      (params) => api.get('/disasters', params),
+    mine:      (params) => api.get('/disasters/my', params),
     get:       (id) => api.get(`/disasters/${id}`),
     create:    (body) => api.post('/disasters', body),
     update:    (id, body) => api.put(`/disasters/${id}`, body),
@@ -111,6 +112,7 @@ const api = {
   assignments: {
     create:     (body) => api.post('/assignments', body),
     byDisaster: (disasterId, params) => api.get(`/assignments/disaster/${disasterId}`, params),
+    mine:       (params) => api.get('/assignments/me', params),
     setStatus:  (id, status, hoursLogged) => api.patch(`/assignments/${id}/status`, { status, hoursLogged }),
   },
 
@@ -141,6 +143,15 @@ const api = {
     active:  () => api.get('/disasters', { status: 'ACTIVE', size: 200, page: 0 }),
     all:     (params) => api.get('/disasters', { size: 200, page: 0, ...params }),
     nearby:  (lat, lng, radiusKm = 100) => api.get('/disasters/nearby', { lat, lng, radiusKm }),
+  },
+
+  // News / Live incident feed
+  news: {
+    list:    (params) => api.get('/news', params),
+    get:     (id) => api.get(`/news/${id}`),
+    create:  (body) => api.post('/news', body),
+    update:  (id, body) => api.put(`/news/${id}`, body),
+    delete:  (id) => api.delete(`/news/${id}`),
   },
 };
 

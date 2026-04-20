@@ -25,13 +25,14 @@
     .mini-chart-container { position: relative; height: 180px; }
     @media (max-width: 860px) { .mini-chart-grid { grid-template-columns: 1fr; } }
   </style>
+  <script defer src="js/icons-init.js"></script>
 </head>
 <body>
   <div class="layout">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
-        <div class="logo-icon">🚨</div>
+        <div class="logo-icon"><i data-lucide="shield-alert"></i></div>
         <div>
           <h1>Relief Platform</h1>
           <span>Emergency Coordination</span>
@@ -40,26 +41,27 @@
       <nav class="sidebar-nav">
         <div class="nav-section">
           <div class="nav-section-label">Overview</div>
-          <a href="admin-dashboard.html" class="nav-link active"><span class="icon">📊</span> Dashboard</a>
-          <a href="analytics.html" class="nav-link"><span class="icon">📈</span> Analytics</a>
-          <a href="map.html" class="nav-link"><span class="icon">🗺️</span> Live Map</a>
+          <a href="admin-dashboard.html" class="nav-link active"><span class="icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+          <a href="analytics.html" class="nav-link"><span class="icon"><i data-lucide="line-chart"></i></span> Analytics</a>
+          <a href="map.html" class="nav-link"><span class="icon"><i data-lucide="map"></i></span> Live Map</a>
+          <a href="news.html" class="nav-link"><span class="icon"><i data-lucide="newspaper"></i></span> News / Live Updates</a>
         </div>
         <div class="nav-section">
           <div class="nav-section-label">Operations</div>
-          <a href="incident-report.html" class="nav-link"><span class="icon">📝</span> Report Incident</a>
-          <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
-          <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests <span class="nav-badge" id="pending-badge">0</span></a>
-          <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+          <a href="incident-report.html" class="nav-link"><span class="icon"><i data-lucide="file-pen-line"></i></span> Report Incident</a>
+          <a href="disasters.html" class="nav-link"><span class="icon"><i data-lucide="cloud-lightning"></i></span> Disasters</a>
+          <a href="relief-requests.html" class="nav-link"><span class="icon"><i data-lucide="siren"></i></span> Relief Requests <span class="nav-badge" id="pending-badge">0</span></a>
+          <a href="assignments.html" class="nav-link"><span class="icon"><i data-lucide="users"></i></span> Assignments</a>
         </div>
         <div class="nav-section">
           <div class="nav-section-label">Resources</div>
-          <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
-          <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
-          <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+          <a href="inventory.html" class="nav-link"><span class="icon"><i data-lucide="package"></i></span> Inventory</a>
+          <a href="volunteers.html" class="nav-link"><span class="icon"><i data-lucide="user-check"></i></span> Volunteers</a>
+          <a href="donations.html" class="nav-link"><span class="icon"><i data-lucide="hand-coins"></i></span> Donations</a>
         </div>
       </nav>
       <div class="sidebar-footer">
-        <button onclick="logout()" class="btn btn-outline" style="width:100%; font-size:13px;">🚪 Logout</button>
+        <button onclick="logout()" class="btn btn-outline" style="width:100%; font-size:13px;"><i data-lucide="log-out"></i> Logout</button>
       </div>
     </aside>
 
@@ -69,8 +71,8 @@
         <h2 class="topbar-title">Admin Dashboard</h2>
         <div class="topbar-actions">
           <div style="font-size:12px; color: var(--text-muted);" id="last-updated"></div>
-          <button class="btn-icon" onclick="loadDashboard()" title="Refresh">🔄</button>
-          <button class="btn-icon" id="notif-btn" title="Notifications">🔔 <span class="notif-dot hidden" id="notif-dot"></span></button>
+          <button class="btn-icon" onclick="loadDashboard()" title="Refresh"><i data-lucide="refresh-cw"></i></button>
+          <button class="btn-icon" id="notif-btn" title="Notifications"><i data-lucide="bell"></i> <span class="notif-dot hidden" id="notif-dot"></span></button>
           <div class="user-menu">
             <div class="user-avatar" id="user-avatar">A</div>
             <div>
@@ -85,31 +87,31 @@
         <!-- Stats -->
         <div class="stats-grid" id="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon red">🌪️</div>
+            <div class="stat-icon red"><i data-lucide="cloud-lightning"></i></div>
             <div><div class="stat-value" id="stat-active">—</div><div class="stat-label">Active Disasters</div></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon red">🔴</div>
+            <div class="stat-icon red"><i data-lucide="alert-octagon"></i></div>
             <div><div class="stat-value" id="stat-critical">—</div><div class="stat-label">Critical Severity</div></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon blue">🙋</div>
+            <div class="stat-icon blue"><i data-lucide="user-check"></i></div>
             <div><div class="stat-value" id="stat-volunteers">—</div><div class="stat-label">Available Volunteers</div></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon amber">🆘</div>
+            <div class="stat-icon amber"><i data-lucide="siren"></i></div>
             <div><div class="stat-value" id="stat-pending">—</div><div class="stat-label">Pending Requests</div></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon green">✅</div>
+            <div class="stat-icon green"><i data-lucide="check-circle-2"></i></div>
             <div><div class="stat-value" id="stat-fulfilled">—</div><div class="stat-label">Fulfilled Requests</div></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon green">💰</div>
-            <div><div class="stat-value" id="stat-donations">—</div><div class="stat-label">Total Donated</div></div>
+            <div class="stat-icon green"><i data-lucide="hand-coins"></i></div>
+            <div><div class="stat-value is-currency" id="stat-donations">—</div><div class="stat-label">Total Donated</div></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon amber">📦</div>
+            <div class="stat-icon amber"><i data-lucide="package"></i></div>
             <div><div class="stat-value" id="stat-lowstock">—</div><div class="stat-label">Low Stock Items</div></div>
           </div>
         </div>
@@ -118,7 +120,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
           <div class="card">
             <div class="card-header">
-              <h3>🆘 Priority Relief Requests</h3>
+              <h3>Priority Relief Requests</h3>
               <a href="relief-requests.html" class="btn btn-outline btn-sm">View All</a>
             </div>
             <div id="priority-requests-list">
@@ -128,7 +130,7 @@
 
           <div class="card">
             <div class="card-header">
-              <h3>🌪️ Active Disasters</h3>
+              <h3>Active Disasters</h3>
               <a href="disasters.html" class="btn btn-outline btn-sm">View All</a>
             </div>
             <div id="active-disasters-list">
@@ -140,7 +142,7 @@
         <!-- Low Stock Alert -->
         <div class="card" style="margin-top: 20px;">
           <div class="card-header">
-            <h3>📦 Low Stock Alerts</h3>
+            <h3>Low Stock Alerts</h3>
             <a href="inventory.html" class="btn btn-outline btn-sm">Manage Inventory</a>
           </div>
           <div id="low-stock-list">
@@ -151,25 +153,25 @@
         <!-- Analytics Charts -->
         <div class="mini-chart-grid">
           <div class="mini-chart-card">
-            <h4>🆘 Requests by Type</h4>
+            <h4>Requests by Type</h4>
             <div class="mini-chart-container"><canvas id="dash-chart-req-type"></canvas></div>
           </div>
           <div class="mini-chart-card">
-            <h4>⚠️ Disasters by Severity</h4>
+            <h4>Disasters by Severity</h4>
             <div class="mini-chart-container"><canvas id="dash-chart-severity"></canvas></div>
           </div>
           <div class="mini-chart-card">
-            <h4>📋 Requests by Status</h4>
+            <h4>Requests by Status</h4>
             <div class="mini-chart-container"><canvas id="dash-chart-req-status"></canvas></div>
           </div>
           <div class="mini-chart-card">
-            <h4>🙋 Volunteer Availability</h4>
+            <h4>Volunteer Availability</h4>
             <div class="mini-chart-container"><canvas id="dash-chart-volunteers"></canvas></div>
           </div>
         </div>
 
         <div style="margin-top:16px; text-align:right;">
-          <a href="analytics.html" class="btn btn-outline btn-sm">📈 Full Analytics →</a>
+          <a href="analytics.html" class="btn btn-outline btn-sm"><i data-lucide="line-chart"></i> Full Analytics →</a>
         </div>
       </main>
     </div>
@@ -179,8 +181,8 @@
 
   <script type="module">
     import api from './js/api.js';
-    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
-    import { showToast, formatCurrency, severityBadge, statusBadge, urgencyBar } from './js/utils.js';
+    import { requireAuth, renderUserInfo, logout as authLogout, hasRole } from './js/auth.js';
+    import { showToast, formatCurrency, formatCurrencyCompactIndian, severityBadge, statusBadge, urgencyBar } from './js/utils.js';
     import { connectWebSocket } from './js/websocket.js';
     import './js/profile.js';
 
@@ -202,6 +204,9 @@
 
     window.logout = authLogout;
     requireAuth();
+    if (!(hasRole('ADMIN') || hasRole('SUPER_ADMIN'))) {
+      window.location.href = '/dashboard.html';
+    }
     renderUserInfo();
     connectWebSocket((n) => {
       document.getElementById('notif-dot')?.classList.remove('hidden');
@@ -215,7 +220,9 @@
         document.getElementById('stat-volunteers').textContent = stats.availableVolunteers;
         document.getElementById('stat-pending').textContent   = stats.pendingRequests;
         document.getElementById('stat-fulfilled').textContent = stats.fulfilledRequests;
-        document.getElementById('stat-donations').textContent = formatCurrency(stats.totalDonationAmount);
+        const donationEl = document.getElementById('stat-donations');
+        donationEl.textContent = formatCurrencyCompactIndian(stats.totalDonationAmount);
+        donationEl.title = formatCurrency(stats.totalDonationAmount);
         document.getElementById('stat-lowstock').textContent  = stats.lowStockItems;
         document.getElementById('pending-badge').textContent  = stats.pendingRequests;
         document.getElementById('last-updated').textContent   = 'Updated ' + new Date().toLocaleTimeString();
@@ -228,7 +235,7 @@
         const reqs = await api.requests.priority(10);
         const list = document.getElementById('priority-requests-list');
         if (reqs.length === 0) {
-          list.innerHTML = '<div class="empty-state"><div class="icon">✅</div><h3>No pending requests</h3></div>';
+          list.innerHTML = '<div class="empty-state"><div class="icon"><i data-lucide="check-circle-2"></i></div><h3>No pending requests</h3></div>';
         } else {
           list.innerHTML = `<div class="table-wrapper"><table>
             <thead><tr><th>Victim</th><th>Type</th><th>Urgency</th><th>Status</th></tr></thead>
@@ -248,7 +255,7 @@
         const { content } = await api.disasters.list({ status: 'ACTIVE', page: 0, size: 5 });
         const list = document.getElementById('active-disasters-list');
         if (!content?.length) {
-          list.innerHTML = '<div class="empty-state"><div class="icon">🌤️</div><h3>No active disasters</h3></div>';
+          list.innerHTML = '<div class="empty-state"><div class="icon"><i data-lucide="sun"></i></div><h3>No active disasters</h3></div>';
         } else {
           list.innerHTML = `<div class="table-wrapper"><table>
             <thead><tr><th>Title</th><th>Severity</th><th>Affected</th></tr></thead>
@@ -287,7 +294,7 @@
         const items = await api.inventory.lowStock();
         const list = document.getElementById('low-stock-list');
         if (!items.length) {
-          list.innerHTML = '<div class="empty-state"><div class="icon">✅</div><h3>All items are adequately stocked</h3></div>';
+          list.innerHTML = '<div class="empty-state"><div class="icon"><i data-lucide="check-circle-2"></i></div><h3>All items are adequately stocked</h3></div>';
         } else {
           list.innerHTML = `<div class="table-wrapper"><table>
             <thead><tr><th>Item</th><th>Category</th><th>Current Qty</th><th>Threshold</th><th>Status</th></tr></thead>
@@ -302,6 +309,8 @@
             </tbody></table></div>`;
         }
       } catch {}
+
+      if (window.lucide) window.lucide.createIcons();
     }
 
     loadDashboard();
