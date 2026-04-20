@@ -136,7 +136,7 @@ if (document.getElementById('register-form')) {
       // Show success banner, hide form, redirect to login
       form.style.display = 'none';
       successDiv.innerHTML =
-        '✅ <strong>Account created successfully!</strong><br>' +
+        '<strong>Account created successfully!</strong><br>' +
         '<span style="font-weight:400;opacity:.8">Redirecting to sign in page in 3 seconds…</span>';
       successDiv.classList.add('show');
       setTimeout(() => { window.location.href = '/index.html'; }, 3000);

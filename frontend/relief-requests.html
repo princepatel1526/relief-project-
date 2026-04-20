@@ -5,33 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relief Requests | Disaster Relief Platform</title>
   <link rel="stylesheet" href="css/main.css">
+  <script defer src="js/icons-init.js"></script>
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1></div></div>
+      <div class="sidebar-logo"><div class="logo-icon"><i data-lucide="shield-alert"></i></div><div><h1>Relief Platform</h1></div></div>
       <nav class="sidebar-nav">
         <div class="nav-section">
           <div class="nav-section-label">Overview</div>
-          <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
-          <a href="analytics.html" class="nav-link"><span class="icon">📈</span> Analytics</a>
-          <a href="map.html" class="nav-link"><span class="icon">🗺️</span> Live Map</a>
+          <a href="admin-dashboard.html" class="nav-link"><span class="icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+          <a href="analytics.html" class="nav-link"><span class="icon"><i data-lucide="line-chart"></i></span> Analytics</a>
+          <a href="map.html" class="nav-link"><span class="icon"><i data-lucide="map"></i></span> Live Map</a>
         </div>
         <div class="nav-section">
           <div class="nav-section-label">Operations</div>
-          <a href="incident-report.html" class="nav-link"><span class="icon">📝</span> Report Incident</a>
-          <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
-          <a href="relief-requests.html" class="nav-link active"><span class="icon">🆘</span> Relief Requests</a>
-          <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+          <a href="incident-report.html" class="nav-link"><span class="icon"><i data-lucide="file-pen-line"></i></span> Report Incident</a>
+          <a href="disasters.html" class="nav-link"><span class="icon"><i data-lucide="cloud-lightning"></i></span> Disasters</a>
+          <a href="relief-requests.html" class="nav-link active"><span class="icon"><i data-lucide="siren"></i></span> Relief Requests</a>
+          <a href="assignments.html" class="nav-link"><span class="icon"><i data-lucide="users"></i></span> Assignments</a>
         </div>
         <div class="nav-section">
           <div class="nav-section-label">Resources</div>
-          <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
-          <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
-          <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+          <a href="inventory.html" class="nav-link"><span class="icon"><i data-lucide="package"></i></span> Inventory</a>
+          <a href="volunteers.html" class="nav-link"><span class="icon"><i data-lucide="user-check"></i></span> Volunteers</a>
+          <a href="donations.html" class="nav-link"><span class="icon"><i data-lucide="hand-coins"></i></span> Donations</a>
         </div>
       </nav>
-      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;"><i data-lucide="log-out"></i> Logout</button></div>
     </aside>
 
     <div class="main-content">
@@ -59,7 +60,7 @@
               <option value="REJECTED">Rejected</option>
               <option value="CANCELLED">Cancelled</option>
             </select>
-            <button class="btn btn-outline btn-sm" onclick="loadPriority()">🔝 By Priority</button>
+            <button class="btn btn-outline btn-sm" onclick="loadPriority()">By Priority</button>
             <button class="btn btn-outline btn-sm" onclick="loadRequests()">All</button>
           </div>
         </div>
@@ -89,7 +90,7 @@
   <!-- Add Request Modal -->
   <div class="modal-overlay hidden" id="add-modal">
     <div class="modal">
-      <div class="modal-header"><h3>🆘 New Relief Request</h3><button class="btn-close" onclick="closeAddModal()">✕</button></div>
+      <div class="modal-header"><h3>New Relief Request</h3><button class="btn-close" onclick="closeAddModal()"><i data-lucide="x"></i></button></div>
       <div class="modal-body">
         <form id="request-form">
           <div class="form-grid">
@@ -181,7 +182,7 @@
     function render(content, totalPages, page) {
       const tbody = document.getElementById('requests-tbody');
       if (!content?.length) {
-        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">✅</div><h3>No requests found</h3></div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon"><i data-lucide="check-circle-2"></i></div><h3>No requests found</h3></div></td></tr>`;
         return;
       }
       tbody.innerHTML = content.map(r => `
@@ -215,7 +216,7 @@
               <option value="REJECTED">Rejected</option>
               <option value="CANCELLED">Cancelled</option>
             </select>
-            <button class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 8px;" onclick="showTimeline(${r.id})">📋</button>
+            <button class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 8px;" onclick="showTimeline(${r.id})">Details</button>
           </td>
         </tr>`).join('');
 
@@ -278,8 +279,8 @@
         modal.innerHTML = `
           <div class="modal" style="max-width:500px">
             <div class="modal-header">
-              <h3>📋 Status Timeline</h3>
-              <button class="btn-close" onclick="document.getElementById('timeline-modal').classList.add('hidden')">✕</button>
+              <h3>Status Timeline</h3>
+              <button class="btn-close" onclick="document.getElementById('timeline-modal').classList.add('hidden')"><i data-lucide="x"></i></button>
             </div>
             <div class="modal-body" id="timeline-body" style="max-height:400px;overflow-y:auto;">
               <div class="loading-overlay"><div class="spinner"></div></div>

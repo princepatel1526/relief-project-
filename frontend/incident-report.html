@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Report Incident | Disaster Relief Platform</title>
   <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/sp38=" crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     .report-layout {
       display: grid;
@@ -105,43 +103,44 @@
       color: var(--text);
     }
   </style>
+  <script defer src="js/icons-init.js"></script>
 </head>
 <body>
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon">🚨</div>
+      <div class="logo-icon"><i data-lucide="shield-alert"></i></div>
       <div><h1>Relief Platform</h1><span>Emergency Coordination</span></div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-section-label">Overview</div>
-        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
-        <a href="analytics.html" class="nav-link"><span class="icon">📈</span> Analytics</a>
-        <a href="map.html" class="nav-link"><span class="icon">🗺️</span> Live Map</a>
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+        <a href="analytics.html" class="nav-link"><span class="icon"><i data-lucide="line-chart"></i></span> Analytics</a>
+        <a href="map.html" class="nav-link"><span class="icon"><i data-lucide="map"></i></span> Live Map</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Operations</div>
-        <a href="incident-report.html" class="nav-link active"><span class="icon">📝</span> Report Incident</a>
-        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
-        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
-        <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+        <a href="incident-report.html" class="nav-link active"><span class="icon"><i data-lucide="file-pen-line"></i></span> Report Incident</a>
+        <a href="disasters.html" class="nav-link"><span class="icon"><i data-lucide="cloud-lightning"></i></span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon"><i data-lucide="siren"></i></span> Relief Requests</a>
+        <a href="assignments.html" class="nav-link"><span class="icon"><i data-lucide="users"></i></span> Assignments</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Resources</div>
-        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
-        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
-        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+        <a href="inventory.html" class="nav-link"><span class="icon"><i data-lucide="package"></i></span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon"><i data-lucide="user-check"></i></span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon"><i data-lucide="hand-coins"></i></span> Donations</a>
       </div>
     </nav>
     <div class="sidebar-footer">
-      <button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button>
+      <button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;"><i data-lucide="log-out"></i> Logout</button>
     </div>
   </aside>
 
   <div class="main-content">
     <header class="topbar">
-      <h2 class="topbar-title">📝 Report an Incident</h2>
+      <h2 class="topbar-title">Report an Incident</h2>
       <div class="topbar-actions">
         <div class="user-menu">
           <div class="user-avatar" id="user-avatar">A</div>
@@ -154,7 +153,7 @@
 
       <!-- Success screen -->
       <div class="success-screen card" id="success-screen">
-        <div class="success-icon">✅</div>
+        <div class="success-icon"><i data-lucide="check-circle-2"></i></div>
         <h2>Incident Reported Successfully</h2>
         <p>Your report has been submitted and is pending verification by the coordination team.<br>
            You will be notified when the status changes.</p>
@@ -169,13 +168,13 @@
         <div class="card">
           <div class="card-header">
             <h3>Incident Details</h3>
-            <button class="btn btn-outline btn-sm" onclick="captureGPS()">📍 Use My Location</button>
+            <button class="btn btn-outline btn-sm" onclick="captureGPS()">Use My Location</button>
           </div>
           <div class="card-body">
 
             <!-- Timestamp notice -->
             <div style="background:var(--surface-alt);border-radius:8px;padding:10px 14px;font-size:12.5px;color:var(--text-secondary);margin-bottom:18px;">
-              🕐 Auto-timestamp: <strong id="auto-timestamp"></strong>
+              Auto-timestamp: <strong id="auto-timestamp"></strong>
             </div>
 
             <div class="report-layout">
@@ -248,7 +247,7 @@
                 <div class="form-group">
                   <label class="form-label">Pin Location on Map <span style="color:var(--danger)">*</span></label>
                   <div id="pin-map"></div>
-                  <div class="map-hint">📌 Click on the map to drop a pin at the incident location</div>
+                  <div class="map-hint">Click on the map to drop a pin at the incident location</div>
                 </div>
 
                 <div class="coords-row">
@@ -276,7 +275,7 @@
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
               <button class="btn btn-outline" onclick="resetForm()">Reset</button>
               <button class="btn btn-primary" id="submit-btn" onclick="submitReport()">
-                🚨 Submit Report
+                Submit Report
               </button>
             </div>
           </div>
@@ -357,15 +356,15 @@
       showToast('Geolocation not supported', 'error'); return;
     }
     const btn = document.querySelector('[onclick="captureGPS()"]');
-    btn.textContent = '⏳ Locating…'; btn.disabled = true;
+    btn.textContent = 'Pending Locating…'; btn.disabled = true;
     navigator.geolocation.getCurrentPosition(pos => {
       setPin(pos.coords.latitude, pos.coords.longitude);
       pinMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
-      btn.textContent = '📍 Use My Location'; btn.disabled = false;
+      btn.textContent = 'Use My Location'; btn.disabled = false;
       showToast('Location captured!', 'success');
     }, () => {
       showToast('Could not get your location', 'error');
-      btn.textContent = '📍 Use My Location'; btn.disabled = false;
+      btn.textContent = 'Use My Location'; btn.disabled = false;
     });
   };
 
@@ -417,7 +416,7 @@
     if (!lat || !lng) { showError('Please pin the location on the map or enter coordinates.'); return; }
 
     btn.disabled = true;
-    btn.textContent = '⏳ Submitting…';
+    btn.textContent = 'Pending Submitting…';
 
     try {
       await api.disasters.create({
@@ -440,7 +439,7 @@
       showError(err.message || 'Submission failed. Please try again.');
     } finally {
       btn.disabled = false;
-      btn.textContent = '🚨 Submit Report';
+      btn.textContent = 'Submit Report';
     }
   };
 

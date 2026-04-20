@@ -7,67 +7,236 @@
   <link rel="stylesheet" href="css/main.css">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
-    .donation-hero {
-      background: linear-gradient(135deg, #991b1b, #dc2626);
-      color: white;
-      border-radius: 16px;
-      padding: 40px;
-      margin-bottom: 24px;
-      text-align: center;
+    .donation-page {
+      max-width: 1140px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
-    .donation-hero h2 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
-    .donation-hero p { font-size: 16px; opacity: 0.9; }
-    .amount-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .trust-banner {
+      background: linear-gradient(120deg, #102a43, #1f3d5c);
+      color: #eef5ff;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 24px 28px;
+      box-shadow: 0 14px 28px rgba(16, 42, 67, .22);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .trust-banner h2 {
+      font-size: clamp(1.5rem, 2vw, 2.1rem);
+      font-weight: 800;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    .trust-banner p {
+      max-width: 640px;
+      font-size: 14px;
+      opacity: .92;
+      line-height: 1.6;
+    }
+    .trust-badges {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(150px, 1fr));
+      gap: 10px;
+      width: min(420px, 100%);
+    }
+    .trust-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #f3f8ff;
+    }
+    .trust-badge i { width: 14px; height: 14px; }
+
+    .donation-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, .9fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .donation-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 24px rgba(16, 24, 40, .06);
+      overflow: hidden;
+    }
+    .donation-panel-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #f8fbff, #ffffff);
+    }
+    .donation-panel-head h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f2740;
+      margin-bottom: 4px;
+    }
+    .donation-panel-head p {
+      font-size: 12.5px;
+      color: #5f6e7f;
+    }
+    .donation-panel-body {
+      padding: 22px;
+    }
+
+    .amount-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
     .amount-btn {
-      padding: 12px;
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
+      padding: 11px;
+      border: 1px solid #ccd7e6;
+      border-radius: 12px;
       background: var(--surface);
       cursor: pointer;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
+      color: #143454;
       text-align: center;
       transition: all var(--transition);
     }
     .amount-btn:hover, .amount-btn.selected {
-      border-color: var(--primary);
-      background: #fee2e2;
-      color: var(--primary);
+      border-color: #366fa3;
+      background: #eff6ff;
+      color: #0f2740;
+      transform: translateY(-1px);
     }
-    .donation-form-wrapper { max-width: 580px; margin: 0 auto; }
-    .impact-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
-    .impact-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; text-align: center; }
-    .impact-card .impact-icon { font-size: 32px; margin-bottom: 8px; }
-    .impact-card strong { display: block; font-size: 20px; font-weight: 800; color: var(--primary); }
-    .impact-card span { font-size: 13px; color: var(--text-muted); }
+
+    .donation-cta {
+      width: 100%;
+      margin-top: 8px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1f4e79, #2f855a);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 12px 20px rgba(31, 78, 121, .25);
+      transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+    }
+    .donation-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 26px rgba(31, 78, 121, .28);
+      filter: saturate(1.06);
+    }
+    .donation-cta:disabled { opacity: .72; cursor: not-allowed; transform: none; }
+
+    .secure-line {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 12px;
+      color: #627487;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .secure-line i { width: 13px; height: 13px; }
+
+    .impact-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .impact-card {
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      border: 1px solid #dfe7f3;
+      border-radius: 14px;
+      padding: 16px;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    }
+    .impact-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px rgba(13, 42, 73, .08);
+      border-color: #cbd9ec;
+    }
+    .impact-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .impact-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: #eef4fb;
+      color: #1f4e79;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .impact-icon i { width: 18px; height: 18px; }
+    .impact-card strong {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f2740;
+    }
+    .impact-card p {
+      margin: 0;
+      font-size: 13px;
+      color: #5f6e7f;
+      line-height: 1.5;
+    }
+    .help-note {
+      background: #f5f9ff;
+      border: 1px solid #dbe6f5;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 13px;
+      color: #40566f;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 980px) {
+      .trust-banner { flex-direction: column; }
+      .trust-badges { width: 100%; }
+      .donation-layout { grid-template-columns: 1fr; }
+      .amount-grid { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
+  <script defer src="js/icons-init.js"></script>
 </head>
 <body style="background: var(--bg);">
   <div class="layout">
     <aside class="sidebar">
-      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1><span>Emergency Coordination</span></div></div>
+      <div class="sidebar-logo"><div class="logo-icon"><i data-lucide="shield-alert"></i></div><div><h1>Relief Platform</h1><span>Emergency Coordination</span></div></div>
       <nav class="sidebar-nav">
         <div class="nav-section">
           <div class="nav-section-label">Overview</div>
-          <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
-          <a href="analytics.html" class="nav-link"><span class="icon">📈</span> Analytics</a>
-          <a href="map.html" class="nav-link"><span class="icon">🗺️</span> Live Map</a>
+          <a href="admin-dashboard.html" class="nav-link"><span class="icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+          <a href="analytics.html" class="nav-link"><span class="icon"><i data-lucide="line-chart"></i></span> Analytics</a>
+          <a href="map.html" class="nav-link"><span class="icon"><i data-lucide="map"></i></span> Live Map</a>
         </div>
         <div class="nav-section">
           <div class="nav-section-label">Operations</div>
-          <a href="incident-report.html" class="nav-link"><span class="icon">📝</span> Report Incident</a>
-          <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
-          <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
-          <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+          <a href="incident-report.html" class="nav-link"><span class="icon"><i data-lucide="file-pen-line"></i></span> Report Incident</a>
+          <a href="disasters.html" class="nav-link"><span class="icon"><i data-lucide="cloud-lightning"></i></span> Disasters</a>
+          <a href="relief-requests.html" class="nav-link"><span class="icon"><i data-lucide="siren"></i></span> Relief Requests</a>
+          <a href="assignments.html" class="nav-link"><span class="icon"><i data-lucide="users"></i></span> Assignments</a>
         </div>
         <div class="nav-section">
           <div class="nav-section-label">Resources</div>
-          <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
-          <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
-          <a href="donations.html" class="nav-link active"><span class="icon">💰</span> Donations</a>
+          <a href="inventory.html" class="nav-link"><span class="icon"><i data-lucide="package"></i></span> Inventory</a>
+          <a href="volunteers.html" class="nav-link"><span class="icon"><i data-lucide="user-check"></i></span> Volunteers</a>
+          <a href="donations.html" class="nav-link active"><span class="icon"><i data-lucide="hand-coins"></i></span> Donations</a>
         </div>
       </nav>
-      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;"><i data-lucide="log-out"></i> Logout</button></div>
     </aside>
 
     <div class="main-content">
@@ -78,96 +247,119 @@
         </div>
       </header>
 
-      <main class="page-content">
-        <div class="donation-hero">
-          <div style="font-size: 48px; margin-bottom: 12px;">🙏</div>
-          <h2>Every Rupee Counts</h2>
-          <p>Your donation directly helps disaster victims get food, shelter, and medical care</p>
-        </div>
-
-        <div class="donation-form-wrapper">
-          <!-- Success State -->
-          <div id="donation-success" class="card" style="display:none; text-align:center; padding: 40px;">
-            <div style="font-size:64px; margin-bottom:16px;">✅</div>
-            <h3 style="font-size:24px; margin-bottom:8px; color: var(--success)">Donation Successful!</h3>
-            <p style="color:var(--text-muted); margin-bottom:24px">Thank you for your generous contribution. Your payment has been verified and recorded.</p>
-            <button onclick="resetDonation()" class="btn btn-primary">Make Another Donation</button>
+      <main class="page-content donation-page">
+        <section class="trust-banner">
+          <div>
+            <h2>Support verified disaster relief operations</h2>
+            <p>
+              Your contribution helps deliver food, medical supplies, and emergency shelter to families affected by active incidents.
+              Donations are processed securely and tracked for rapid field deployment.
+            </p>
           </div>
+          <div class="trust-badges">
+            <div class="trust-badge"><i data-lucide="shield-check"></i> Secure Payment</div>
+            <div class="trust-badge"><i data-lucide="badge-check"></i> 100% Relief Fund Usage</div>
+            <div class="trust-badge"><i data-lucide="zap"></i> Fast Verification</div>
+            <div class="trust-badge"><i data-lucide="handshake"></i> Trusted Support</div>
+          </div>
+        </section>
 
-          <!-- Donation Form -->
-          <div class="card" id="donation-form-card">
-            <div class="card-header"><h3>💳 Make a Donation</h3></div>
-            <div class="card-body">
-              <form id="donation-form">
-                <div class="form-group">
-                  <label class="form-label">Select Amount</label>
-                  <div class="amount-grid">
-                    <button type="button" class="amount-btn" onclick="setAmount(100)">₹100</button>
-                    <button type="button" class="amount-btn" onclick="setAmount(500)">₹500</button>
-                    <button type="button" class="amount-btn" onclick="setAmount(1000)">₹1,000</button>
-                    <button type="button" class="amount-btn" onclick="setAmount(5000)">₹5,000</button>
-                  </div>
-                  <input class="form-control" type="number" name="amount" id="amount-input" placeholder="Or enter custom amount (₹)" min="1" required>
-                </div>
+        <section class="donation-layout">
+          <div>
+            <div id="donation-success" class="donation-panel" style="display:none; text-align:center; padding: 40px;">
+              <div style="font-size:64px; margin-bottom:16px;"><i data-lucide="check-circle-2"></i></div>
+              <h3 style="font-size:24px; margin-bottom:8px; color: var(--success)">Donation Successful!</h3>
+              <p style="color:var(--text-muted); margin-bottom:24px">Thank you for your generous contribution. Your payment has been verified and recorded.</p>
+              <button onclick="resetDonation()" class="btn btn-primary">Make Another Donation</button>
+            </div>
 
-                <div class="form-group">
-                  <label class="form-label">Donate For</label>
-                  <select class="form-control" name="disasterId" id="disaster-select">
-                    <option value="">General Relief Fund (Any Disaster)</option>
-                  </select>
-                </div>
-
-                <div class="form-grid">
+            <div class="donation-panel" id="donation-form-card">
+              <div class="donation-panel-head">
+                <h3>Complete your donation</h3>
+                <p>Choose an amount and continue with Razorpay’s secure checkout.</p>
+              </div>
+              <div class="donation-panel-body">
+                <form id="donation-form">
                   <div class="form-group">
-                    <label class="form-label">Your Name *</label>
-                    <input class="form-control" name="donorName" placeholder="Rahul Sharma" required>
+                    <label class="form-label">Select Amount</label>
+                    <div class="amount-grid">
+                      <button type="button" class="amount-btn" onclick="setAmount(500, this)">₹500</button>
+                      <button type="button" class="amount-btn" onclick="setAmount(1000, this)">₹1,000</button>
+                      <button type="button" class="amount-btn" onclick="setAmount(2500, this)">₹2,500</button>
+                      <button type="button" class="amount-btn" onclick="setAmount(5000, this)">₹5,000</button>
+                    </div>
+                    <input class="form-control" type="number" name="amount" id="amount-input" placeholder="Or enter custom amount (₹)" min="1" required>
                   </div>
+
                   <div class="form-group">
-                    <label class="form-label">Phone *</label>
-                    <input class="form-control" name="donorPhone" type="tel" placeholder="9876543210" pattern="[6-9][0-9]{9}" required>
+                    <label class="form-label">Donate For</label>
+                    <select class="form-control" name="disasterId" id="disaster-select">
+                      <option value="">General Relief Fund (Any Disaster)</option>
+                    </select>
                   </div>
+
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label class="form-label">Your Name *</label>
+                      <input class="form-control" name="donorName" placeholder="Rahul Sharma" required>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Phone *</label>
+                      <input class="form-control" name="donorPhone" type="tel" placeholder="9876543210" pattern="[6-9][0-9]{9}" required>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-control" name="donorEmail" type="email" placeholder="rahul@example.com">
+                  </div>
+
+                  <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" name="isAnonymous" id="anon-check" style="width:16px;height:16px">
+                    <label for="anon-check" style="font-size:14px;cursor:pointer">Make donation anonymous</label>
+                  </div>
+
+                  <button id="donate-submit-btn" type="submit" class="donation-cta" data-default-label="Donate securely via Razorpay">
+                    <i data-lucide="lock-keyhole"></i>
+                    <span>Donate securely via Razorpay</span>
+                  </button>
+                </form>
+
+                <div class="secure-line">
+                  <i data-lucide="shield-check"></i>
+                  Secured by Razorpay — PCI DSS Compliant
                 </div>
-
-                <div class="form-group">
-                  <label class="form-label">Email</label>
-                  <input class="form-control" name="donorEmail" type="email" placeholder="rahul@example.com">
-                </div>
-
-                <div class="form-group" style="display:flex; align-items:center; gap:8px;">
-                  <input type="checkbox" name="isAnonymous" id="anon-check" style="width:16px;height:16px">
-                  <label for="anon-check" style="font-size:14px;cursor:pointer">Make donation anonymous</label>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:8px;">
-                  💳 Donate via Razorpay
-                </button>
-              </form>
-
-              <div style="margin-top: 16px; text-align:center; font-size:12px; color:var(--text-muted);">
-                🔒 Secured by Razorpay — PCI DSS Compliant
               </div>
             </div>
           </div>
 
-          <!-- Impact Cards -->
-          <div class="impact-cards">
+          <aside class="impact-panel">
             <div class="impact-card">
-              <div class="impact-icon">🍚</div>
-              <strong>₹100</strong>
-              <span>Feeds 2 people for a day</span>
+              <div class="impact-head">
+                <div class="impact-icon"><i data-lucide="utensils-crossed"></i></div>
+                <strong>₹500</strong>
+              </div>
+              <p>Provides essential cooked meals and clean water for affected families.</p>
             </div>
             <div class="impact-card">
-              <div class="impact-icon">💊</div>
-              <strong>₹500</strong>
-              <span>Medical kit for a family</span>
+              <div class="impact-head">
+                <div class="impact-icon"><i data-lucide="pill"></i></div>
+                <strong>₹1,000</strong>
+              </div>
+              <p>Supports urgent medical aid, first-aid kits, and emergency treatment.</p>
             </div>
             <div class="impact-card">
-              <div class="impact-icon">🏠</div>
-              <strong>₹5,000</strong>
-              <span>Shelter for 1 week</span>
+              <div class="impact-head">
+                <div class="impact-icon"><i data-lucide="house"></i></div>
+                <strong>₹5,000</strong>
+              </div>
+              <p>Helps arrange temporary emergency shelter and essential supplies.</p>
             </div>
-          </div>
-        </div>
+            <div class="help-note">
+              Your donation receipt and verification status are updated automatically after successful payment verification.
+            </div>
+          </aside>
+        </section>
       </main>
     </div>
   </div>
@@ -177,7 +369,6 @@
   <script type="module">
     import api from './js/api.js';
     import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
-    import { showToast } from './js/utils.js';
     import { initDonationForm } from './js/payment.js';
     import './js/profile.js';
 
@@ -186,16 +377,18 @@
     renderUserInfo();
     initDonationForm();
 
-    window.setAmount = (amount) => {
+    window.setAmount = (amount, btnEl) => {
       document.getElementById('amount-input').value = amount;
       document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('selected'));
-      event.target.classList.add('selected');
+      if (btnEl) btnEl.classList.add('selected');
     };
 
     window.resetDonation = () => {
       document.getElementById('donation-success').style.display = 'none';
       document.getElementById('donation-form-card').style.display = 'block';
+      document.getElementById('donation-form').style.display = 'block';
       document.getElementById('donation-form').reset();
+      document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('selected'));
     };
 
     // Load disasters for dropdown
