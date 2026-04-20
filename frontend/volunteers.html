@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volunteers | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1></div></div>
+      <nav class="sidebar-nav">
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
+        <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
+        <a href="volunteers.html" class="nav-link active"><span class="icon">🙋</span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+      </nav>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+    </aside>
+
+    <div class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title">Volunteers</h2>
+        <div class="topbar-actions">
+          <div class="user-menu"><div class="user-avatar" id="user-avatar">A</div><div><div class="user-name" id="user-name"></div></div></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <div class="page-header">
+          <div style="display:flex;gap:10px">
+            <select class="form-control" id="filter-avail" style="width:180px">
+              <option value="">All Volunteers</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="BUSY">Busy</option>
+              <option value="UNAVAILABLE">Unavailable</option>
+              <option value="ON_LEAVE">On Leave</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-outline" onclick="openNearbyModal()">📍 Find Nearby</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Volunteer</th><th>Skills</th><th>Experience</th><th>Availability</th><th>Rating</th><th>Hours</th><th>Verified</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="volunteers-tbody">
+                  <tr><td colspan="8" style="text-align:center;padding:40px"><div class="spinner" style="margin:auto"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="volunteers-pagination" class="pagination"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Nearby Modal -->
+  <div class="modal-overlay hidden" id="nearby-modal">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header"><h3>📍 Find Nearby Volunteers</h3><button class="btn-close" onclick="closeNearbyModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Latitude</label>
+          <input class="form-control" id="nearby-lat" type="number" step="any" placeholder="19.0760">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Longitude</label>
+          <input class="form-control" id="nearby-lng" type="number" step="any" placeholder="72.8777">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Skill Filter (optional)</label>
+          <input class="form-control" id="nearby-skill" placeholder="First Aid, Medical...">
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="findNearby()">Search</button>
+        <div id="nearby-results" style="margin-top:16px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { showToast, statusBadge, buildPagination } from './js/utils.js';
+
+    window.logout = authLogout;
+    requireAuth();
+    renderUserInfo();
+
+    let currentPage = 0;
+
+    async function loadVolunteers(page = 0) {
+      currentPage = page;
+      const availability = document.getElementById('filter-avail').value || null;
+      const tbody = document.getElementById('volunteers-tbody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px"><div class="spinner" style="margin:auto"></div></td></tr>`;
+
+      try {
+        const data = await api.volunteers.list({ availability, page, size: 15 });
+        const { content, totalPages } = data;
+
+        if (!content?.length) {
+          tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🙋</div><h3>No volunteers found</h3></div></td></tr>`;
+        } else {
+          tbody.innerHTML = content.map(v => `
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:36px;height:36px;background:var(--secondary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0">${v.fullName.charAt(0)}</div>
+                  <div>
+                    <strong>${v.fullName}</strong><br>
+                    <small style="color:var(--text-muted)">${v.email}</small>
+                  </div>
+                </div>
+              </td>
+              <td><small>${(v.skills || '').split(',').slice(0,2).join(', ')}</small></td>
+              <td>${v.experienceYears || 0} yrs</td>
+              <td>${statusBadge(v.availability)}</td>
+              <td>⭐ ${Number(v.rating || 0).toFixed(1)}</td>
+              <td>${Number(v.totalHours || 0).toFixed(1)} hrs</td>
+              <td>${v.isVerified ? '✅' : '⏳'}</td>
+              <td>
+                <select class="form-control" style="font-size:12px;padding:4px 8px;width:auto" onchange="setAvailability(${v.id}, this.value)">
+                  <option value="">Set status</option>
+                  <option value="AVAILABLE">Available</option>
+                  <option value="BUSY">Busy</option>
+                  <option value="UNAVAILABLE">Unavailable</option>
+                  <option value="ON_LEAVE">On Leave</option>
+                </select>
+              </td>
+            </tr>`).join('');
+        }
+
+        buildPagination(document.getElementById('volunteers-pagination'), page, totalPages, loadVolunteers);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="alert alert-danger">${e.message}</div></td></tr>`;
+      }
+    }
+
+    window.setAvailability = async (id, availability) => {
+      if (!availability) return;
+      try {
+        await api.volunteers.setAvail(id, availability);
+        showToast('Availability updated!', 'success');
+        loadVolunteers(currentPage);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    window.openNearbyModal  = () => document.getElementById('nearby-modal').classList.remove('hidden');
+    window.closeNearbyModal = () => document.getElementById('nearby-modal').classList.add('hidden');
+
+    window.findNearby = async () => {
+      const lat   = parseFloat(document.getElementById('nearby-lat').value);
+      const lng   = parseFloat(document.getElementById('nearby-lng').value);
+      const skill = document.getElementById('nearby-skill').value || null;
+
+      if (!lat || !lng) { showToast('Enter valid coordinates', 'error'); return; }
+
+      const results = document.getElementById('nearby-results');
+      results.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const volunteers = await api.volunteers.nearby(lat, lng, skill, 10);
+        if (!volunteers.length) {
+          results.innerHTML = '<p style="color:var(--text-muted);text-align:center">No volunteers found nearby</p>';
+        } else {
+          results.innerHTML = volunteers.map(v => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+              <div><strong>${v.fullName}</strong><br><small>${(v.skills || '').split(',').slice(0,2).join(', ')}</small></div>
+              <div style="text-align:right">
+                <span class="badge badge-success">${v.distanceKm?.toFixed(1)} km</span>
+                ${statusBadge(v.availability)}
+              </div>
+            </div>`).join('');
+        }
+      } catch (e) {
+        results.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+      }
+    };
+
+    document.getElementById('filter-avail').onchange = () => loadVolunteers(0);
+    loadVolunteers();
+  </script>
+</body>
+</html>

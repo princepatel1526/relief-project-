@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disasters | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1><span>Emergency Coordination</span></div></div>
+      <nav class="sidebar-nav">
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="disasters.html" class="nav-link active"><span class="icon">🌪️</span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
+        <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+      </nav>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+    </aside>
+
+    <div class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title">Disaster Management</h2>
+        <div class="topbar-actions">
+          <div class="user-menu"><div class="user-avatar" id="user-avatar">A</div><div><div class="user-name" id="user-name"></div><div class="user-role" id="user-role"></div></div></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <div class="page-header">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <select class="form-control" id="filter-status" style="width:160px">
+              <option value="">All Statuses</option>
+              <option value="REPORTED">Reported</option>
+              <option value="ACTIVE">Active</option>
+              <option value="CONTAINED">Contained</option>
+              <option value="RESOLVED">Resolved</option>
+            </select>
+            <select class="form-control" id="filter-severity" style="width:160px">
+              <option value="">All Severities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="openCreateModal()">+ Report Disaster</button>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Disaster</th><th>Type</th><th>Severity</th><th>Status</th>
+                    <th>Affected People</th><th>Location</th><th>Requests</th><th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="disasters-tbody">
+                  <tr><td colspan="8" class="text-center" style="padding:40px"><div class="spinner"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="disasters-pagination" class="pagination"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create Modal -->
+  <div class="modal-overlay hidden" id="create-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>🌪️ Report New Disaster</h3>
+        <button class="btn-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="disaster-form">
+          <div class="form-group">
+            <label class="form-label">Title *</label>
+            <input class="form-control" name="title" placeholder="e.g. Mumbai Flooding 2024" required>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Type *</label>
+              <select class="form-control" name="disasterTypeId" id="type-select" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Severity *</label>
+              <select class="form-control" name="severity" required>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM" selected>Medium</option>
+                <option value="HIGH">High</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="3" placeholder="Describe the disaster situation..."></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Latitude</label>
+              <input class="form-control" name="latitude" type="number" step="any" placeholder="19.0760">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Longitude</label>
+              <input class="form-control" name="longitude" type="number" step="any" placeholder="72.8777">
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Location Name</label>
+              <input class="form-control" name="locationName" placeholder="Mumbai, Maharashtra">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Affected People (est.)</label>
+              <input class="form-control" name="affectedPeople" type="number" min="0" placeholder="500">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitDisaster()">Report Disaster</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { showToast, severityBadge, statusBadge, buildPagination, formatDate } from './js/utils.js';
+
+    window.logout = authLogout;
+    requireAuth();
+    renderUserInfo();
+
+    let currentPage = 0;
+
+    async function loadDisasterTypes() {
+      try {
+        const types = await api.disasters.types();
+        const sel = document.getElementById('type-select');
+        types.forEach(t => {
+          const opt = new Option(`${t.icon ? t.icon + ' ' : ''}${t.name}`, t.id);
+          sel.appendChild(opt);
+        });
+      } catch {}
+    }
+
+    async function loadDisasters(page = 0) {
+      currentPage = page;
+      const status   = document.getElementById('filter-status').value || null;
+      const severity = document.getElementById('filter-severity').value || null;
+      const tbody    = document.getElementById('disasters-tbody');
+      tbody.innerHTML = `<tr><td colspan="8" style="padding:40px;text-align:center"><div class="spinner" style="margin:auto"></div></td></tr>`;
+
+      try {
+        const data = await api.disasters.list({ status, severity, page, size: 10 });
+        const { content, totalPages } = data;
+
+        if (!content?.length) {
+          tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🌤️</div><h3>No disasters found</h3></div></td></tr>`;
+        } else {
+          tbody.innerHTML = content.map(d => `
+            <tr>
+              <td><strong>${d.title}</strong><br><small style="color:var(--text-muted)">${d.disasterTypeName}</small></td>
+              <td><span class="badge badge-info">${d.disasterTypeName}</span></td>
+              <td>${severityBadge(d.severity)}</td>
+              <td>${statusBadge(d.status)}</td>
+              <td>${(d.affectedPeople || 0).toLocaleString()}</td>
+              <td>${d.locationName || '-'}</td>
+              <td><span class="badge badge-warning">${d.activeRequestsCount} pending</span></td>
+              <td>
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-sm btn-outline" onclick="changeStatus(${d.id}, '${d.status}')">Status</button>
+                  <a href="assignments.html?disasterId=${d.id}" class="btn btn-sm btn-secondary">Assign</a>
+                </div>
+              </td>
+            </tr>`).join('');
+        }
+
+        buildPagination(document.getElementById('disasters-pagination'), page, totalPages, loadDisasters);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="alert alert-danger">${e.message}</div></td></tr>`;
+      }
+    }
+
+    window.openCreateModal = loadDisasterTypes().then(() => {
+      window.openCreateModal = () => document.getElementById('create-modal').classList.remove('hidden');
+    });
+
+    window.closeModal = () => document.getElementById('create-modal').classList.add('hidden');
+
+    window.submitDisaster = async () => {
+      const form = document.getElementById('disaster-form');
+      const data = Object.fromEntries(new FormData(form));
+      data.disasterTypeId = parseInt(data.disasterTypeId);
+      data.affectedPeople = data.affectedPeople ? parseInt(data.affectedPeople) : 0;
+      data.latitude  = data.latitude  ? parseFloat(data.latitude)  : null;
+      data.longitude = data.longitude ? parseFloat(data.longitude) : null;
+
+      try {
+        await api.disasters.create(data);
+        showToast('Disaster reported successfully!', 'success');
+        window.closeModal();
+        form.reset();
+        loadDisasters();
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    window.changeStatus = async (id, current) => {
+      const statuses = ['REPORTED', 'ACTIVE', 'CONTAINED', 'RESOLVED', 'CLOSED'];
+      const next = prompt(`Change status for disaster #${id}\nCurrent: ${current}\nOptions: ${statuses.join(', ')}\n\nEnter new status:`);
+      if (!next || !statuses.includes(next)) return;
+      try {
+        await api.disasters.setStatus(id, next);
+        showToast('Status updated!', 'success');
+        loadDisasters(currentPage);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    document.getElementById('filter-status').onchange   = () => loadDisasters(0);
+    document.getElementById('filter-severity').onchange = () => loadDisasters(0);
+
+    loadDisasterTypes();
+    loadDisasters();
+  </script>
+</body>
+</html>

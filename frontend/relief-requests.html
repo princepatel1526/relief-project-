@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relief Requests | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1></div></div>
+      <nav class="sidebar-nav">
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link active"><span class="icon">🆘</span> Relief Requests</a>
+        <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+      </nav>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+    </aside>
+
+    <div class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title">Relief Requests</h2>
+        <div class="topbar-actions">
+          <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ New Request</button>
+          <div class="user-menu"><div class="user-avatar" id="user-avatar">A</div><div><div class="user-name" id="user-name"></div></div></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <div class="page-header" style="margin-bottom:16px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <select class="form-control" id="filter-status" style="width:160px">
+              <option value="">All Statuses</option>
+              <option value="PENDING" selected>Pending</option>
+              <option value="ASSIGNED">Assigned</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="FULFILLED">Fulfilled</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="loadPriority()">🔝 By Priority</button>
+            <button class="btn btn-outline btn-sm" onclick="loadRequests()">All</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Victim</th><th>Disaster</th><th>Type</th><th>Urgency</th>
+                    <th>Qty Needed</th><th>Status</th><th>Assigned To</th><th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="requests-tbody">
+                  <tr><td colspan="8" style="text-align:center;padding:40px"><div class="spinner" style="margin:auto"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="requests-pagination" class="pagination"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add Request Modal -->
+  <div class="modal-overlay hidden" id="add-modal">
+    <div class="modal">
+      <div class="modal-header"><h3>🆘 New Relief Request</h3><button class="btn-close" onclick="closeAddModal()">✕</button></div>
+      <div class="modal-body">
+        <form id="request-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Victim ID *</label>
+              <input class="form-control" name="victimId" type="number" placeholder="Victim ID" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Disaster *</label>
+              <select class="form-control" name="disasterId" id="req-disaster-sel" required></select>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Request Type *</label>
+              <select class="form-control" name="requestType" required>
+                <option value="FOOD">Food</option>
+                <option value="WATER">Water</option>
+                <option value="MEDICAL">Medical</option>
+                <option value="SHELTER">Shelter</option>
+                <option value="CLOTHING">Clothing</option>
+                <option value="RESCUE">Rescue</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Urgency (1-5) *</label>
+              <input class="form-control" name="urgencyLevel" type="number" min="1" max="5" value="3" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="3" placeholder="Describe the need..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quantity Needed</label>
+            <input class="form-control" name="quantityNeeded" type="number" min="1" placeholder="e.g. 5 bags of rice">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitRequest()">Submit Request</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { showToast, statusBadge, urgencyBar, buildPagination } from './js/utils.js';
+
+    window.logout = authLogout;
+    requireAuth();
+    renderUserInfo();
+
+    let currentPage = 0;
+
+    async function loadRequests(page = 0) {
+      currentPage = page;
+      const status = document.getElementById('filter-status').value || null;
+      const tbody  = document.getElementById('requests-tbody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px"><div class="spinner" style="margin:auto"></div></td></tr>`;
+
+      try {
+        const data = await api.requests.list({ status, page, size: 20 });
+        render(data.content, data.totalPages, page);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="alert alert-danger">${e.message}</div></td></tr>`;
+      }
+    }
+    window.loadRequests = loadRequests;
+
+    async function loadPriority() {
+      const tbody = document.getElementById('requests-tbody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px"><div class="spinner" style="margin:auto"></div></td></tr>`;
+      try {
+        const reqs = await api.requests.priority(50);
+        render(reqs, 1, 0);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="alert alert-danger">${e.message}</div></td></tr>`;
+      }
+    }
+    window.loadPriority = loadPriority;
+
+    function render(content, totalPages, page) {
+      const tbody = document.getElementById('requests-tbody');
+      if (!content?.length) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">✅</div><h3>No requests found</h3></div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = content.map(r => `
+        <tr>
+          <td><strong>${r.victimName}</strong><br><small>${r.victimPhone || ''}</small></td>
+          <td><small>${r.disasterTitle}</small></td>
+          <td><span class="badge badge-info">${r.requestType}</span></td>
+          <td>${urgencyBar(r.urgencyLevel)}</td>
+          <td>${r.quantityNeeded || '-'}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>${r.assignedVolunteerName || '<span style="color:var(--text-muted)">Unassigned</span>'}</td>
+          <td>
+            <select class="form-control" style="font-size:12px;padding:4px 8px;width:auto" onchange="updateStatus(${r.id}, this.value)">
+              <option value="">Change status</option>
+              <option value="PENDING">Pending</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="FULFILLED">Fulfilled</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </td>
+        </tr>`).join('');
+
+      buildPagination(document.getElementById('requests-pagination'), page, totalPages, loadRequests);
+    }
+
+    window.updateStatus = async (id, status) => {
+      if (!status) return;
+      try {
+        await api.requests.setStatus(id, status);
+        showToast('Status updated!', 'success');
+        loadRequests(currentPage);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    window.openAddModal  = async () => {
+      const sel = document.getElementById('req-disaster-sel');
+      if (!sel.children.length) {
+        const { content } = await api.disasters.list({ status: 'ACTIVE', size: 20 });
+        content?.forEach(d => sel.appendChild(new Option(d.title, d.id)));
+      }
+      document.getElementById('add-modal').classList.remove('hidden');
+    };
+    window.closeAddModal = () => document.getElementById('add-modal').classList.add('hidden');
+
+    window.submitRequest = async () => {
+      const form = document.getElementById('request-form');
+      const data = Object.fromEntries(new FormData(form));
+      data.victimId      = parseInt(data.victimId);
+      data.disasterId    = parseInt(data.disasterId);
+      data.urgencyLevel  = parseInt(data.urgencyLevel);
+      data.quantityNeeded = data.quantityNeeded ? parseInt(data.quantityNeeded) : null;
+      try {
+        await api.requests.create(data);
+        showToast('Request submitted!', 'success');
+        window.closeAddModal();
+        form.reset();
+        loadRequests();
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    document.getElementById('filter-status').onchange = () => loadRequests(0);
+    loadRequests();
+  </script>
+</body>
+</html>

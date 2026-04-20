@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1></div></div>
+      <nav class="sidebar-nav">
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
+        <a href="inventory.html" class="nav-link active"><span class="icon">📦</span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+      </nav>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+    </aside>
+
+    <div class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title">Inventory Management</h2>
+        <div class="topbar-actions">
+          <div class="user-menu"><div class="user-avatar" id="user-avatar">A</div><div><div class="user-name" id="user-name"></div></div></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <!-- Low Stock Alert Bar -->
+        <div id="low-stock-bar" class="alert alert-warning" style="display:none">
+          ⚠️ <span id="low-stock-count">0</span> items are running low on stock. <a href="#" onclick="filterLowStock()">View low stock items</a>
+        </div>
+
+        <div class="page-header">
+          <div style="display:flex;gap:10px">
+            <select class="form-control" id="filter-category" style="width:160px">
+              <option value="">All Categories</option>
+              <option value="FOOD">Food</option>
+              <option value="WATER">Water</option>
+              <option value="MEDICINE">Medicine</option>
+              <option value="CLOTHING">Clothing</option>
+              <option value="SHELTER">Shelter</option>
+              <option value="EQUIPMENT">Equipment</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add Item</button>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Item</th><th>Category</th><th>Quantity</th><th>Unit</th><th>Location</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="inventory-tbody">
+                  <tr><td colspan="7" style="text-align:center;padding:40px"><div class="spinner" style="margin:auto"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="inventory-pagination" class="pagination"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add Item Modal -->
+  <div class="modal-overlay hidden" id="add-modal">
+    <div class="modal">
+      <div class="modal-header"><h3>📦 Add Inventory Item</h3><button class="btn-close" onclick="closeAddModal()">✕</button></div>
+      <div class="modal-body">
+        <form id="add-form">
+          <div class="form-group">
+            <label class="form-label">Item Name *</label>
+            <input class="form-control" name="itemName" placeholder="e.g. Rice (5kg bags)" required>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select class="form-control" name="category" required>
+                <option value="FOOD">Food</option>
+                <option value="WATER">Water</option>
+                <option value="MEDICINE">Medicine</option>
+                <option value="CLOTHING">Clothing</option>
+                <option value="SHELTER">Shelter</option>
+                <option value="EQUIPMENT">Equipment</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Unit</label>
+              <input class="form-control" name="unit" placeholder="bags, bottles, kits..." value="units">
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Initial Quantity *</label>
+              <input class="form-control" name="quantity" type="number" min="0" required placeholder="100">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Min. Threshold</label>
+              <input class="form-control" name="minThreshold" type="number" min="0" placeholder="10" value="10">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiry Date (optional)</label>
+            <input class="form-control" name="expiryDate" type="date">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitItem()">Add Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Quantity Modal -->
+  <div class="modal-overlay hidden" id="qty-modal">
+    <div class="modal" style="max-width:380px">
+      <div class="modal-header"><h3>📝 Update Quantity</h3><button class="btn-close" onclick="closeQtyModal()">✕</button></div>
+      <div class="modal-body">
+        <p id="qty-item-name" style="font-weight:600; margin-bottom:16px;"></p>
+        <div class="form-group">
+          <label class="form-label">Operation</label>
+          <select class="form-control" id="qty-operation">
+            <option value="ADD">Add Stock</option>
+            <option value="SUBTRACT">Use/Distribute</option>
+            <option value="SET">Set Exact Quantity</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input class="form-control" id="qty-value" type="number" min="1" placeholder="50">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason</label>
+          <input class="form-control" id="qty-reason" placeholder="e.g. Donated goods received">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeQtyModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitQuantityUpdate()">Update</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { showToast, buildPagination } from './js/utils.js';
+
+    window.logout = authLogout;
+    requireAuth();
+    renderUserInfo();
+
+    let currentPage = 0;
+    let editingId = null;
+
+    async function loadInventory(page = 0) {
+      currentPage = page;
+      const category = document.getElementById('filter-category').value || null;
+      const tbody    = document.getElementById('inventory-tbody');
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px"><div class="spinner" style="margin:auto"></div></td></tr>`;
+
+      try {
+        const data = await api.inventory.list({ category, page, size: 20 });
+        const { content, totalPages } = data;
+
+        if (!content?.length) {
+          tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">📦</div><h3>No items found</h3></div></td></tr>`;
+        } else {
+          tbody.innerHTML = content.map(i => `
+            <tr>
+              <td><strong>${i.itemName}</strong></td>
+              <td><span class="badge badge-info">${i.category}</span></td>
+              <td style="${i.lowStock ? 'color:var(--danger);font-weight:700' : ''}">
+                ${i.quantity} ${i.lowStock ? '⚠️' : ''}
+              </td>
+              <td>${i.unit}</td>
+              <td>${i.locationName || '-'}</td>
+              <td>${i.lowStock
+                ? '<span class="badge badge-danger">LOW STOCK</span>'
+                : '<span class="badge badge-success">OK</span>'}
+              </td>
+              <td>
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-sm btn-secondary" onclick="openQtyModal(${i.id}, '${i.itemName}')">±Qty</button>
+                  <button class="btn btn-sm btn-outline" onclick="deleteItem(${i.id}, '${i.itemName}')">🗑</button>
+                </div>
+              </td>
+            </tr>`).join('');
+        }
+
+        buildPagination(document.getElementById('inventory-pagination'), page, totalPages, loadInventory);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="alert alert-danger">${e.message}</div></td></tr>`;
+      }
+
+      // Check low stock
+      try {
+        const lowItems = await api.inventory.lowStock();
+        const bar = document.getElementById('low-stock-bar');
+        if (lowItems.length > 0) {
+          document.getElementById('low-stock-count').textContent = lowItems.length;
+          bar.style.display = 'flex';
+        } else {
+          bar.style.display = 'none';
+        }
+      } catch {}
+    }
+
+    window.openAddModal   = () => document.getElementById('add-modal').classList.remove('hidden');
+    window.closeAddModal  = () => document.getElementById('add-modal').classList.add('hidden');
+    window.closeQtyModal  = () => document.getElementById('qty-modal').classList.add('hidden');
+
+    window.openQtyModal = (id, name) => {
+      editingId = id;
+      document.getElementById('qty-item-name').textContent = name;
+      document.getElementById('qty-value').value = '';
+      document.getElementById('qty-reason').value = '';
+      document.getElementById('qty-modal').classList.remove('hidden');
+    };
+
+    window.submitItem = async () => {
+      const form = document.getElementById('add-form');
+      const data = Object.fromEntries(new FormData(form));
+      data.quantity     = parseInt(data.quantity);
+      data.minThreshold = parseInt(data.minThreshold || 10);
+      if (!data.expiryDate) delete data.expiryDate;
+
+      try {
+        await api.inventory.create(data);
+        showToast('Item added!', 'success');
+        window.closeAddModal();
+        form.reset();
+        loadInventory();
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    window.submitQuantityUpdate = async () => {
+      const operation     = document.getElementById('qty-operation').value;
+      const quantityChange = parseInt(document.getElementById('qty-value').value);
+      const reason        = document.getElementById('qty-reason').value;
+
+      if (!quantityChange || quantityChange < 1) {
+        showToast('Enter a valid quantity', 'error');
+        return;
+      }
+
+      try {
+        await api.inventory.updateQty(editingId, { quantityChange, operation, reason });
+        showToast('Quantity updated!', 'success');
+        window.closeQtyModal();
+        loadInventory(currentPage);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    window.deleteItem = async (id, name) => {
+      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+      try {
+        await api.inventory.delete(id);
+        showToast('Item deleted', 'success');
+        loadInventory(currentPage);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    window.filterLowStock = async () => {
+      document.getElementById('filter-category').value = '';
+      await loadInventory();
+    };
+
+    document.getElementById('filter-category').onchange = () => loadInventory(0);
+    loadInventory();
+  </script>
+</body>
+</html>

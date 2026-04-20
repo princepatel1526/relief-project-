@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 24px; }
+    .auth-card { background: white; border-radius: 16px; padding: 40px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,.5); }
+    .auth-logo { text-align: center; margin-bottom: 28px; }
+    .auth-logo .logo-circle { width: 56px; height: 56px; background: #dc2626; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 10px; }
+    .auth-logo h1 { font-size: 20px; font-weight: 800; color: #1e293b; }
+    .hidden { display: none; }
+    .auth-footer { text-align: center; margin-top: 16px; font-size: 14px; color: #64748b; }
+    .auth-footer a { color: #dc2626; font-weight: 600; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-circle">🚨</div>
+      <h1>Create Account</h1>
+    </div>
+
+    <div id="register-error" class="alert alert-danger hidden"></div>
+
+    <form id="register-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-control" type="text" name="fullName" placeholder="Rahul Sharma" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-control" type="text" name="username" placeholder="rahul123" required minlength="3">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" name="email" placeholder="rahul@example.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone (Indian)</label>
+        <input class="form-control" type="tel" name="phone" placeholder="9876543210" pattern="[6-9][0-9]{9}">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-control" type="password" name="password" placeholder="Min 8 chars" required minlength="8">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input class="form-control" type="password" name="confirmPassword" placeholder="Confirm" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select class="form-control" name="role">
+          <option value="VOLUNTEER">Volunteer</option>
+          <option value="COORDINATOR">Coordinator</option>
+          <option value="DONOR">Donor</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; padding: 12px; font-size: 16px; margin-top: 4px;">Create Account</button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="index.html">Sign in</a>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

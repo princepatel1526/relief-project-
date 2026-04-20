@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assignments | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1></div></div>
+      <nav class="sidebar-nav">
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
+        <a href="assignments.html" class="nav-link active"><span class="icon">👥</span> Assignments</a>
+        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+      </nav>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+    </aside>
+
+    <div class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title">Volunteer Assignments</h2>
+        <div class="topbar-actions">
+          <button class="btn btn-primary btn-sm" onclick="openAssignModal()">+ Create Assignment</button>
+          <div class="user-menu"><div class="user-avatar" id="user-avatar">A</div><div><div class="user-name" id="user-name"></div></div></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <div class="page-header" style="margin-bottom:16px">
+          <div style="display:flex;gap:10px;align-items:center">
+            <label style="font-weight:600;font-size:14px">Disaster:</label>
+            <select class="form-control" id="disaster-filter" style="width:280px">
+              <option value="">Select a disaster...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div id="assignments-content">
+            <div class="empty-state">
+              <div class="icon">👥</div>
+              <h3>Select a disaster to view assignments</h3>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create Assignment Modal -->
+  <div class="modal-overlay hidden" id="assign-modal">
+    <div class="modal">
+      <div class="modal-header"><h3>👥 Create Assignment</h3><button class="btn-close" onclick="closeAssignModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          Assign an available volunteer to a disaster. The volunteer's availability will be set to BUSY automatically.
+        </div>
+        <form id="assign-form">
+          <div class="form-group">
+            <label class="form-label">Disaster *</label>
+            <select class="form-control" name="disasterId" id="assign-disaster-sel" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Volunteer ID *</label>
+            <input class="form-control" name="volunteerId" type="number" placeholder="Enter volunteer ID" required>
+            <small style="color:var(--text-muted)">Go to <a href="volunteers.html">Volunteers</a> to find available volunteer IDs</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Relief Request ID (optional)</label>
+            <input class="form-control" name="reliefRequestId" type="number" placeholder="Link to a specific request">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" name="notes" rows="2" placeholder="Special instructions..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeAssignModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAssignment()">Create Assignment</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { showToast, statusBadge, formatDate } from './js/utils.js';
+
+    window.logout = authLogout;
+    requireAuth();
+    renderUserInfo();
+
+    let disasters = [];
+
+    async function init() {
+      const { content } = await api.disasters.list({ size: 50 });
+      disasters = content || [];
+
+      const filterSel = document.getElementById('disaster-filter');
+      const assignSel = document.getElementById('assign-disaster-sel');
+
+      disasters.forEach(d => {
+        filterSel.appendChild(new Option(`${d.title} (${d.status})`, d.id));
+        assignSel.appendChild(new Option(d.title, d.id));
+      });
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const disasterId = urlParams.get('disasterId');
+      if (disasterId) {
+        filterSel.value = disasterId;
+        loadAssignments(disasterId);
+      }
+    }
+
+    async function loadAssignments(disasterId) {
+      const content = document.getElementById('assignments-content');
+      content.innerHTML = `<div class="loading-overlay"><div class="spinner"></div></div>`;
+
+      try {
+        const data = await api.assignments.byDisaster(disasterId, { page: 0, size: 50 });
+        const items = data.content || [];
+
+        if (!items.length) {
+          content.innerHTML = `<div class="empty-state"><div class="icon">👥</div><h3>No assignments for this disaster</h3><p>Create assignments to deploy volunteers</p></div>`;
+        } else {
+          content.innerHTML = `<div class="table-wrapper"><table>
+            <thead><tr><th>Volunteer</th><th>Disaster</th><th>Assigned By</th><th>Status</th><th>Assigned At</th><th>Hours</th><th>Actions</th></tr></thead>
+            <tbody>${items.map(a => `
+              <tr>
+                <td><strong>${a.volunteerName}</strong></td>
+                <td>${a.disasterTitle}</td>
+                <td>${a.assignedByName}</td>
+                <td>${statusBadge(a.status)}</td>
+                <td>${formatDate(a.assignedAt)}</td>
+                <td>${a.hoursLogged || '-'}</td>
+                <td>
+                  <select class="form-control" style="font-size:12px;padding:4px 8px;width:auto" onchange="updateAssignment(${a.id}, this.value)">
+                    <option value="">Update status</option>
+                    <option value="ACCEPTED">Accept</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="COMPLETED">Complete</option>
+                    <option value="DECLINED">Decline</option>
+                    <option value="CANCELLED">Cancel</option>
+                  </select>
+                </td>
+              </tr>`).join('')}
+            </tbody></table></div>`;
+        }
+      } catch (e) {
+        content.innerHTML = `<div class="alert alert-danger" style="margin:16px">${e.message}</div>`;
+      }
+    }
+
+    window.updateAssignment = async (id, status) => {
+      if (!status) return;
+      let hoursLogged = null;
+      if (status === 'COMPLETED') {
+        const h = prompt('Enter hours worked (optional):');
+        if (h) hoursLogged = parseFloat(h);
+      }
+      try {
+        await api.assignments.setStatus(id, status, hoursLogged);
+        showToast('Assignment updated!', 'success');
+        const disasterId = document.getElementById('disaster-filter').value;
+        if (disasterId) loadAssignments(disasterId);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    window.openAssignModal  = () => document.getElementById('assign-modal').classList.remove('hidden');
+    window.closeAssignModal = () => document.getElementById('assign-modal').classList.add('hidden');
+
+    window.submitAssignment = async () => {
+      const form = document.getElementById('assign-form');
+      const data = Object.fromEntries(new FormData(form));
+      data.volunteerId      = parseInt(data.volunteerId);
+      data.disasterId       = parseInt(data.disasterId);
+      data.reliefRequestId  = data.reliefRequestId ? parseInt(data.reliefRequestId) : null;
+      if (!data.reliefRequestId) delete data.reliefRequestId;
+      try {
+        await api.assignments.create(data);
+        showToast('Assignment created! Volunteer notified.', 'success');
+        window.closeAssignModal();
+        form.reset();
+        const disasterId = document.getElementById('disaster-filter').value;
+        if (disasterId) loadAssignments(disasterId);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    };
+
+    document.getElementById('disaster-filter').onchange = (e) => {
+      if (e.target.value) loadAssignments(e.target.value);
+    };
+
+    init();
+  </script>
+</body>
+</html>

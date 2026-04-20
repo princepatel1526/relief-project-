@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donate | Disaster Relief Platform</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    .donation-hero {
+      background: linear-gradient(135deg, #991b1b, #dc2626);
+      color: white;
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .donation-hero h2 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+    .donation-hero p { font-size: 16px; opacity: 0.9; }
+    .amount-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .amount-btn {
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      transition: all var(--transition);
+    }
+    .amount-btn:hover, .amount-btn.selected {
+      border-color: var(--primary);
+      background: #fee2e2;
+      color: var(--primary);
+    }
+    .donation-form-wrapper { max-width: 580px; margin: 0 auto; }
+    .impact-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+    .impact-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; text-align: center; }
+    .impact-card .impact-icon { font-size: 32px; margin-bottom: 8px; }
+    .impact-card strong { display: block; font-size: 20px; font-weight: 800; color: var(--primary); }
+    .impact-card span { font-size: 13px; color: var(--text-muted); }
+  </style>
+</head>
+<body style="background: var(--bg);">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><div class="logo-icon">🚨</div><div><h1>Relief Platform</h1><span>Emergency Coordination</span></div></div>
+      <nav class="sidebar-nav">
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
+        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
+        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
+        <a href="donations.html" class="nav-link active"><span class="icon">💰</span> Donations</a>
+      </nav>
+      <div class="sidebar-footer"><button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button></div>
+    </aside>
+
+    <div class="main-content">
+      <header class="topbar">
+        <h2 class="topbar-title">Donations</h2>
+        <div class="topbar-actions">
+          <div class="user-menu"><div class="user-avatar" id="user-avatar">A</div><div><div class="user-name" id="user-name"></div><div class="user-role" id="user-role"></div></div></div>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <div class="donation-hero">
+          <div style="font-size: 48px; margin-bottom: 12px;">🙏</div>
+          <h2>Every Rupee Counts</h2>
+          <p>Your donation directly helps disaster victims get food, shelter, and medical care</p>
+        </div>
+
+        <div class="donation-form-wrapper">
+          <!-- Success State -->
+          <div id="donation-success" class="card" style="display:none; text-align:center; padding: 40px;">
+            <div style="font-size:64px; margin-bottom:16px;">✅</div>
+            <h3 style="font-size:24px; margin-bottom:8px; color: var(--success)">Donation Successful!</h3>
+            <p style="color:var(--text-muted); margin-bottom:24px">Thank you for your generous contribution. Your payment has been verified and recorded.</p>
+            <button onclick="resetDonation()" class="btn btn-primary">Make Another Donation</button>
+          </div>
+
+          <!-- Donation Form -->
+          <div class="card" id="donation-form-card">
+            <div class="card-header"><h3>💳 Make a Donation</h3></div>
+            <div class="card-body">
+              <form id="donation-form">
+                <div class="form-group">
+                  <label class="form-label">Select Amount</label>
+                  <div class="amount-grid">
+                    <button type="button" class="amount-btn" onclick="setAmount(100)">₹100</button>
+                    <button type="button" class="amount-btn" onclick="setAmount(500)">₹500</button>
+                    <button type="button" class="amount-btn" onclick="setAmount(1000)">₹1,000</button>
+                    <button type="button" class="amount-btn" onclick="setAmount(5000)">₹5,000</button>
+                  </div>
+                  <input class="form-control" type="number" name="amount" id="amount-input" placeholder="Or enter custom amount (₹)" min="1" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Donate For</label>
+                  <select class="form-control" name="disasterId" id="disaster-select">
+                    <option value="">General Relief Fund (Any Disaster)</option>
+                  </select>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Your Name *</label>
+                    <input class="form-control" name="donorName" placeholder="Rahul Sharma" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Phone *</label>
+                    <input class="form-control" name="donorPhone" type="tel" placeholder="9876543210" pattern="[6-9][0-9]{9}" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input class="form-control" name="donorEmail" type="email" placeholder="rahul@example.com">
+                </div>
+
+                <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" name="isAnonymous" id="anon-check" style="width:16px;height:16px">
+                  <label for="anon-check" style="font-size:14px;cursor:pointer">Make donation anonymous</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:8px;">
+                  💳 Donate via Razorpay
+                </button>
+              </form>
+
+              <div style="margin-top: 16px; text-align:center; font-size:12px; color:var(--text-muted);">
+                🔒 Secured by Razorpay — PCI DSS Compliant
+              </div>
+            </div>
+          </div>
+
+          <!-- Impact Cards -->
+          <div class="impact-cards">
+            <div class="impact-card">
+              <div class="impact-icon">🍚</div>
+              <strong>₹100</strong>
+              <span>Feeds 2 people for a day</span>
+            </div>
+            <div class="impact-card">
+              <div class="impact-icon">💊</div>
+              <strong>₹500</strong>
+              <span>Medical kit for a family</span>
+            </div>
+            <div class="impact-card">
+              <div class="impact-icon">🏠</div>
+              <strong>₹5,000</strong>
+              <span>Shelter for 1 week</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import api from './js/api.js';
+    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { showToast } from './js/utils.js';
+    import { initDonationForm } from './js/payment.js';
+
+    window.logout = authLogout;
+    requireAuth();
+    renderUserInfo();
+    initDonationForm();
+
+    window.setAmount = (amount) => {
+      document.getElementById('amount-input').value = amount;
+      document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('selected'));
+      event.target.classList.add('selected');
+    };
+
+    window.resetDonation = () => {
+      document.getElementById('donation-success').style.display = 'none';
+      document.getElementById('donation-form-card').style.display = 'block';
+      document.getElementById('donation-form').reset();
+    };
+
+    // Load disasters for dropdown
+    (async () => {
+      try {
+        const { content } = await api.disasters.list({ status: 'ACTIVE', size: 20 });
+        const sel = document.getElementById('disaster-select');
+        content?.forEach(d => {
+          const opt = new Option(`${d.title} (${d.locationName})`, d.id);
+          sel.appendChild(opt);
+        });
+      } catch {}
+    })();
+  </script>
+</body>
+</html>
