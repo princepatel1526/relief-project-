@@ -159,6 +159,17 @@ a { color: inherit; }
 }
 
 .nav-link .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-link .icon i,
+.logo-icon i,
+.topbar-title i,
+.btn i {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  vertical-align: middle;
+}
+.logo-icon i { width: 18px; height: 18px; }
+.topbar-title i { width: 18px; height: 18px; margin-right: 6px; }
 
 .nav-badge {
   margin-left: auto;
@@ -328,6 +339,11 @@ a { color: inherit; }
   border-radius: var(--radius);
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; flex-shrink: 0;
+}
+.stat-icon i {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
 }
 
 /* Muted, warm-toned icon backgrounds */
