@@ -72,37 +72,39 @@
     .chart-wide { grid-column: span 2; }
     @media (max-width: 860px) { .chart-wide { grid-column: span 1; } }
   </style>
+  <script defer src="js/icons-init.js"></script>
 </head>
 <body>
 <div class="layout">
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon">🚨</div>
+      <div class="logo-icon"><i data-lucide="shield-alert"></i></div>
       <div><h1>Relief Platform</h1><span>Emergency Coordination</span></div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-section-label">Overview</div>
-        <a href="admin-dashboard.html" class="nav-link"><span class="icon">📊</span> Dashboard</a>
-        <a href="analytics.html" class="nav-link active"><span class="icon">📈</span> Analytics</a>
-        <a href="map.html" class="nav-link"><span class="icon">🗺️</span> Live Map</a>
+        <a href="admin-dashboard.html" class="nav-link"><span class="icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+        <a href="analytics.html" class="nav-link active"><span class="icon"><i data-lucide="line-chart"></i></span> Analytics</a>
+        <a href="map.html" class="nav-link"><span class="icon"><i data-lucide="map"></i></span> Live Map</a>
+          <a href="news.html" class="nav-link"><span class="icon"><i data-lucide="newspaper"></i></span> News / Live Updates</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Operations</div>
-        <a href="disasters.html" class="nav-link"><span class="icon">🌪️</span> Disasters</a>
-        <a href="relief-requests.html" class="nav-link"><span class="icon">🆘</span> Relief Requests</a>
-        <a href="assignments.html" class="nav-link"><span class="icon">👥</span> Assignments</a>
+        <a href="disasters.html" class="nav-link"><span class="icon"><i data-lucide="cloud-lightning"></i></span> Disasters</a>
+        <a href="relief-requests.html" class="nav-link"><span class="icon"><i data-lucide="siren"></i></span> Relief Requests</a>
+        <a href="assignments.html" class="nav-link"><span class="icon"><i data-lucide="users"></i></span> Assignments</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Resources</div>
-        <a href="inventory.html" class="nav-link"><span class="icon">📦</span> Inventory</a>
-        <a href="volunteers.html" class="nav-link"><span class="icon">🙋</span> Volunteers</a>
-        <a href="donations.html" class="nav-link"><span class="icon">💰</span> Donations</a>
+        <a href="inventory.html" class="nav-link"><span class="icon"><i data-lucide="package"></i></span> Inventory</a>
+        <a href="volunteers.html" class="nav-link"><span class="icon"><i data-lucide="user-check"></i></span> Volunteers</a>
+        <a href="donations.html" class="nav-link"><span class="icon"><i data-lucide="hand-coins"></i></span> Donations</a>
       </div>
     </nav>
     <div class="sidebar-footer">
-      <button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;">🚪 Logout</button>
+      <button onclick="logout()" class="btn btn-outline" style="width:100%;font-size:13px;"><i data-lucide="log-out"></i> Logout</button>
     </div>
   </aside>
 
@@ -110,7 +112,7 @@
     <header class="topbar">
       <h2 class="topbar-title">Analytics &amp; Insights</h2>
       <div class="topbar-actions">
-        <button class="btn btn-outline btn-sm" onclick="loadAnalytics()">🔄 Refresh</button>
+        <button class="btn btn-outline btn-sm" onclick="loadAnalytics()"><i data-lucide="refresh-cw"></i> Refresh</button>
         <div class="user-menu">
           <div class="user-avatar" id="user-avatar">A</div>
           <div><div class="user-name" id="user-name">Loading…</div><div class="user-role" id="user-role"></div></div>
@@ -135,19 +137,19 @@
       <!-- Charts Row 1 -->
       <div class="analytics-grid">
         <div class="chart-card">
-          <h3>🆘 Requests by Type</h3>
+          <h3>Requests by Type</h3>
           <div class="chart-container"><canvas id="chart-req-type"></canvas></div>
         </div>
         <div class="chart-card">
-          <h3>📋 Requests by Status</h3>
+          <h3>Requests by Status</h3>
           <div class="chart-container"><canvas id="chart-req-status"></canvas></div>
         </div>
         <div class="chart-card">
-          <h3>🌪️ Disasters by Type</h3>
+          <h3>Disasters by Type</h3>
           <div class="chart-container"><canvas id="chart-dis-type"></canvas></div>
         </div>
         <div class="chart-card">
-          <h3>⚠️ Disasters by Severity</h3>
+          <h3>Disasters by Severity</h3>
           <div class="chart-container"><canvas id="chart-dis-severity"></canvas></div>
         </div>
       </div>
@@ -155,11 +157,11 @@
       <!-- Charts Row 2 -->
       <div class="analytics-grid">
         <div class="chart-card chart-wide">
-          <h3>📊 Operations Overview</h3>
+          <h3>Operations Overview</h3>
           <div class="chart-container" style="height:260px"><canvas id="chart-overview"></canvas></div>
         </div>
         <div class="chart-card">
-          <h3>🙋 Volunteer Availability</h3>
+          <h3>Volunteer Availability</h3>
           <div class="chart-container"><canvas id="chart-volunteers"></canvas></div>
         </div>
       </div>

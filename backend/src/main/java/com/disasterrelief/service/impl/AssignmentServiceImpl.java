@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,6 +94,14 @@ public class AssignmentServiceImpl {
     public AssignmentResponse updateStatus(Long id, Assignment.AssignmentStatus newStatus, Double hoursLogged) {
         Assignment assignment = assignmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment", "id", id));
+        User currentUser = currentUser();
+        boolean privileged = hasAnyRole(currentUser, Role.RoleName.ROLE_ADMIN, Role.RoleName.ROLE_SUPER_ADMIN,
+                Role.RoleName.ROLE_NGO_COORDINATOR);
+        if (!privileged && (assignment.getVolunteer() == null
+                || assignment.getVolunteer().getUser() == null
+                || !assignment.getVolunteer().getUser().getId().equals(currentUser.getId()))) {
+            throw new AccessDeniedException("You can only update your own assignments");
+        }
 
         assignment.setStatus(newStatus);
 
@@ -130,6 +139,22 @@ public class AssignmentServiceImpl {
     @Transactional(readOnly = true)
     public Page<AssignmentResponse> getAssignmentsByDisaster(Long disasterId, Pageable pageable) {
         return assignmentRepository.findByDisasterId(disasterId, pageable).map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AssignmentResponse> getMyAssignments(Pageable pageable) {
+        User currentUser = currentUser();
+        return assignmentRepository.findByVolunteerUserId(currentUser.getId(), pageable).map(this::toResponse);
+    }
+
+    private User currentUser() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", currentUsername));
+    }
+
+    private boolean hasAnyRole(User user, Role.RoleName... roles) {
+        return user.getRoles().stream().anyMatch(r -> java.util.Arrays.stream(roles).anyMatch(x -> x == r.getName()));
     }
 
     private AssignmentResponse toResponse(Assignment a) {

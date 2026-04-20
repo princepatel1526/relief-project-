@@ -28,7 +28,7 @@ public class UserController {
 
     // ── Admin: list all users ─────────────────────────────────────────
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'NGO_COORDINATOR')")
     public ResponseEntity<List<UserDto>> getUsers() {
         List<UserDto> users = userRepository.findAll().stream()
                 .map(this::toDto)

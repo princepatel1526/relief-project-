@@ -4,18 +4,25 @@ import { showToast, formatCurrency } from './utils.js';
 export async function initDonationForm() {
   const form = document.getElementById('donation-form');
   if (!form) return;
+  const getDefaultLabel = (btn) => btn?.dataset?.defaultLabel || 'Donate securely via Razorpay';
+  const setButtonLabel = (btn, label) => {
+    if (!btn) return;
+    const textNode = btn.querySelector('span');
+    if (textNode) textNode.textContent = label;
+    else btn.textContent = label;
+  };
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('[type="submit"]');
     btn.disabled = true;
-    btn.textContent = 'Processing...';
+    setButtonLabel(btn, 'Processing...');
 
     const amount = parseFloat(form.amount.value);
     if (!amount || amount < 1) {
       showToast('Please enter a valid amount (min ₹1)', 'error');
       btn.disabled = false;
-      btn.textContent = 'Donate Now';
+      setButtonLabel(btn, getDefaultLabel(btn));
       return;
     }
 
@@ -35,7 +42,7 @@ export async function initDonationForm() {
     } catch (err) {
       showToast('Failed to initiate payment: ' + err.message, 'error');
       btn.disabled = false;
-      btn.textContent = 'Donate Now';
+      setButtonLabel(btn, getDefaultLabel(btn));
     }
   });
 }
@@ -57,7 +64,7 @@ function openRazorpayCheckout(orderData, submitBtn) {
     notes: {
       db_payment_id: orderData.paymentDbId,
     },
-    theme: { color: '#dc2626' },
+    theme: { color: '#1f4e79' },
 
     handler: async (response) => {
       await handlePaymentSuccess(response, submitBtn);
@@ -67,7 +74,9 @@ function openRazorpayCheckout(orderData, submitBtn) {
       ondismiss: () => {
         showToast('Payment cancelled', 'warning');
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Donate Now';
+        const textNode = submitBtn.querySelector('span');
+        if (textNode) textNode.textContent = submitBtn.dataset.defaultLabel || 'Donate securely via Razorpay';
+        else submitBtn.textContent = submitBtn.dataset.defaultLabel || 'Donate securely via Razorpay';
       },
     },
   };
@@ -76,7 +85,9 @@ function openRazorpayCheckout(orderData, submitBtn) {
   rzp.on('payment.failed', (response) => {
     showToast('Payment failed: ' + response.error.description, 'error');
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Donate Now';
+    const textNode = submitBtn.querySelector('span');
+    if (textNode) textNode.textContent = submitBtn.dataset.defaultLabel || 'Donate securely via Razorpay';
+    else submitBtn.textContent = submitBtn.dataset.defaultLabel || 'Donate securely via Razorpay';
   });
 
   rzp.open();
@@ -91,13 +102,15 @@ async function handlePaymentSuccess(response, btn) {
       razorpaySignature: response.razorpay_signature,
     });
 
-    showToast('Payment successful! Thank you for your donation 🙏', 'success');
+    showToast('Payment successful! Thank you for your donation.', 'success');
     document.getElementById('donation-success')?.classList.remove('hidden');
     document.getElementById('donation-form')?.classList.add('hidden');
   } catch (err) {
     showToast('Payment verification failed: ' + err.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Donate Now';
+    const textNode = btn.querySelector('span');
+    if (textNode) textNode.textContent = btn.dataset.defaultLabel || 'Donate securely via Razorpay';
+    else btn.textContent = btn.dataset.defaultLabel || 'Donate securely via Razorpay';
   }
 }
