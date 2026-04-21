@@ -204,7 +204,7 @@
 
     window.logout = authLogout;
     requireAuth();
-    if (!(hasRole('ADMIN') || hasRole('SUPER_ADMIN'))) {
+    if (!(hasRole('ADMIN') || hasRole('SUPER_ADMIN') || hasRole('NGO_COORDINATOR'))) {
       window.location.href = '/dashboard.html';
     }
     renderUserInfo();

@@ -14,58 +14,304 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Split layout ─────────────────────────────────── */
+    /* ════════════════════════════════════════════
+       LEFT PANEL — ANIMATED HERO
+    ════════════════════════════════════════════ */
     .auth-left {
-      width: 42%; background: #111318;
+      width: 45%;
+      background: #0d1117;
       display: flex; flex-direction: column;
-      padding: 48px;
       position: relative; overflow: hidden;
+      flex-shrink: 0;
     }
 
-    @media (max-width: 860px) { .auth-left { display: none; } }
+    @media (max-width: 900px) { .auth-left { display: none; } }
 
+    /* ── Base grid pattern ───────────────────── */
     .auth-left::before {
       content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 20% 80%, rgba(255,255,255,.04) 0%, transparent 60%);
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+      background-size: 44px 44px;
       pointer-events: none;
     }
 
+    /* ── Vignette overlay ────────────────────── */
+    .auth-left::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 1;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(13,17,23,0) 0%, rgba(13,17,23,.7) 100%),
+        radial-gradient(ellipse 60% 40% at 0% 100%, rgba(22,42,74,.3) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 30% at 100% 50%, rgba(74,22,40,.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ── SVG map canvas ──────────────────────── */
+    .map-canvas {
+      position: absolute; inset: 0; z-index: 2;
+      pointer-events: none;
+    }
+
+    .map-svg { width: 100%; height: 100%; }
+
+    /* Grid meridians */
+    .grid-line { stroke: rgba(255,255,255,.04); stroke-width: 1; }
+
+    /* India terrain path */
+    .terrain-path {
+      fill: none;
+      stroke: rgba(99,162,255,.12);
+      stroke-width: 1.5;
+      stroke-dasharray: 6 4;
+    }
+
+    /* Coastline highlight */
+    .coast-path {
+      fill: rgba(99,162,255,.03);
+      stroke: rgba(99,162,255,.18);
+      stroke-width: 1;
+    }
+
+    /* Connection lines between nodes */
+    .node-connector {
+      stroke: rgba(99,162,255,.18);
+      stroke-width: 1;
+      stroke-dasharray: 4 6;
+      animation: dash-move 4s linear infinite;
+    }
+
+    @keyframes dash-move {
+      to { stroke-dashoffset: -20; }
+    }
+
+    /* Incident nodes */
+    .incident-node { cursor: default; }
+    .node-core {
+      animation: node-pulse 2.4s ease-in-out infinite;
+    }
+    .node-ring-1 {
+      fill: none;
+      animation: ring-expand 2.4s ease-out infinite;
+    }
+    .node-ring-2 {
+      fill: none;
+      animation: ring-expand 2.4s ease-out .8s infinite;
+    }
+
+    @keyframes node-pulse {
+      0%, 100% { opacity: 1; r: 5; }
+      50%       { opacity: .8; r: 6; }
+    }
+
+    @keyframes ring-expand {
+      0%   { r: 7;  opacity: .6; stroke-width: 1.5; }
+      100% { r: 28; opacity: 0;  stroke-width: .5; }
+    }
+
+    /* Radar sweep */
+    .radar-sweep {
+      transform-origin: 50% 50%;
+      animation: radar-rotate 6s linear infinite;
+    }
+    @keyframes radar-rotate {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ── Content layer ───────────────────────── */
+    .auth-left-inner {
+      position: relative; z-index: 10;
+      display: flex; flex-direction: column;
+      height: 100%; padding: 40px 44px;
+    }
+
+    /* Brand mark */
     .brand-mark {
       display: flex; align-items: center; gap: 10px;
-      margin-bottom: auto;
     }
+
     .brand-icon {
-      width: 36px; height: 36px; border-radius: 8px;
-      background: rgba(255,255,255,.12);
+      width: 34px; height: 34px; border-radius: 8px;
+      background: rgba(99,162,255,.15);
+      border: 1px solid rgba(99,162,255,.25);
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
     }
-    .brand-name { font-size: 14px; font-weight: 700; color: #e8e5df; }
+    .brand-icon svg { width: 17px; height: 17px; }
 
-    .auth-left-body { margin-top: auto; margin-bottom: auto; padding-top: 60px; }
+    .brand-name {
+      font-size: 13px; font-weight: 700; color: rgba(255,255,255,.7);
+      letter-spacing: .01em;
+    }
 
-    .auth-left-body h2 {
-      font-size: 30px; font-weight: 800; line-height: 1.2;
-      color: #f0ede8; letter-spacing: -.02em;
+    /* Main headline */
+    .hero-body {
+      margin-top: auto;
+      margin-bottom: auto;
+      padding-top: 24px;
+      animation: fade-up .8s cubic-bezier(.4,0,.2,1) both;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-body h2 {
+      font-size: 32px; font-weight: 800; line-height: 1.2;
+      color: #f0ede8; letter-spacing: -.03em;
       margin-bottom: 14px;
     }
-    .auth-left-body p {
-      font-size: 14.5px; color: #6c6a64; line-height: 1.7;
+
+    .hero-body h2 span {
+      display: block;
+      background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 50%, #3b82f6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .auth-stats {
-      display: flex; gap: 28px; margin-top: 40px;
+    .hero-body p {
+      font-size: 14px; color: rgba(255,255,255,.42);
+      line-height: 1.75; max-width: 320px;
     }
-    .auth-stat-val { font-size: 22px; font-weight: 800; color: #f0ede8; line-height: 1; }
-    .auth-stat-lbl { font-size: 11px; color: #6c6a64; margin-top: 3px; font-weight: 500; }
 
+    /* Status chips */
+    .status-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px;
+    }
+
+    .status-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 11px; border-radius: 20px;
+      font-size: 11.5px; font-weight: 600;
+      border: 1px solid;
+    }
+
+    .status-chip.active {
+      background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.25);
+      color: #86efac;
+    }
+    .status-chip.warning {
+      background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.25);
+      color: #fcd34d;
+    }
+    .status-chip.info {
+      background: rgba(99,162,255,.1); border-color: rgba(99,162,255,.25);
+      color: #93c5fd;
+    }
+
+    .chip-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .active .chip-dot {
+      background: #22c55e;
+      box-shadow: 0 0 0 2px rgba(34,197,94,.3);
+      animation: dot-blink 1.4s ease-in-out infinite;
+    }
+    .warning .chip-dot { background: #f59e0b; }
+    .info    .chip-dot { background: #60a5fa; }
+
+    @keyframes dot-blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .3; }
+    }
+
+    /* Stats bar */
+    .hero-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; margin-top: 28px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; overflow: hidden;
+    }
+
+    .stat-item {
+      background: rgba(13,17,23,.6);
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    .stat-item:not(:last-child) { border-right: 1px solid rgba(255,255,255,.07); }
+
+    .stat-val {
+      font-size: 20px; font-weight: 800; color: #f0ede8;
+      line-height: 1; letter-spacing: -.02em;
+    }
+
+    .stat-lbl {
+      font-size: 10.5px; color: rgba(255,255,255,.38);
+      margin-top: 4px; font-weight: 500; text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* Live incident ticker */
+    .ticker-wrap {
+      margin-top: 24px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: 9px 12px;
+      display: flex; align-items: center; gap: 10px;
+      overflow: hidden;
+    }
+
+    .ticker-label {
+      font-size: 9px; font-weight: 800; letter-spacing: .12em;
+      color: #ef4444; text-transform: uppercase;
+      white-space: nowrap;
+      padding: 2px 6px; background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.25); border-radius: 3px;
+      flex-shrink: 0;
+      animation: label-blink 2s ease-in-out infinite;
+    }
+
+    @keyframes label-blink {
+      0%, 80%, 100% { opacity: 1; }
+      40% { opacity: .4; }
+    }
+
+    .ticker-track {
+      flex: 1; overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker-scroll 28s linear infinite;
+    }
+
+    .ticker-inner span {
+      font-size: 11.5px; color: rgba(255,255,255,.5);
+      padding-right: 44px;
+      font-weight: 500;
+    }
+
+    .ticker-inner span::before {
+      content: ' · ';
+      color: rgba(255,255,255,.2);
+      padding-right: 2px;
+    }
+
+    .ticker-inner span:first-child::before { content: ''; }
+
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Footer tag */
     .auth-left-footer {
-      margin-top: 40px;
-      font-size: 11.5px; color: #4a4845; line-height: 1.6;
+      margin-top: 20px;
+      font-size: 11px; color: rgba(255,255,255,.2);
+      letter-spacing: .03em;
     }
 
-    /* ── Right panel (form) ───────────────────────────── */
+    /* ════════════════════════════════════════════
+       RIGHT PANEL — FORM
+    ════════════════════════════════════════════ */
     .auth-right {
       flex: 1; display: flex; align-items: center; justify-content: center;
       padding: 40px 24px;
@@ -73,16 +319,13 @@
 
     .auth-form-wrap { width: 100%; max-width: 380px; }
 
-    .auth-heading {
-      margin-bottom: 28px;
-    }
+    .auth-heading { margin-bottom: 28px; }
     .auth-heading h1 {
       font-size: 24px; font-weight: 800; color: #111110;
       letter-spacing: -.02em; margin-bottom: 4px;
     }
     .auth-heading p { font-size: 13.5px; color: #8a8784; }
 
-    /* ── Form elements ────────────────────────────────── */
     .form-group  { margin-bottom: 14px; }
     .form-label  { display: block; font-size: 12.5px; font-weight: 600; color: #111110; margin-bottom: 5px; }
     .form-control {
@@ -109,7 +352,6 @@
     .btn-submit:active  { transform: scale(.98); }
     .btn-submit:disabled{ opacity: .6; cursor: not-allowed; }
 
-    /* ── Feedback ─────────────────────────────────────── */
     .form-alert {
       padding: 11px 14px; border-radius: 9px; border: 1px solid;
       font-size: 13px; font-weight: 500; margin-bottom: 14px;
@@ -128,24 +370,20 @@
     }
     .shake { animation: shake .45s cubic-bezier(.36,.07,.19,.97); }
 
-    /* ── Footer links ─────────────────────────────────── */
     .auth-form-footer {
       margin-top: 18px; font-size: 13px; color: #8a8784; text-align: center;
     }
     .auth-form-footer a { color: #111110; font-weight: 600; text-decoration: none; }
     .auth-form-footer a:hover { text-decoration: underline; }
 
-    .recovery-links {
-      display: flex; justify-content: space-between;
-      margin-top: 10px;
-    }
+    .recovery-links { display: flex; justify-content: space-between; margin-top: 10px; }
     .recovery-links a {
       font-size: 12.5px; color: #4a4845; text-decoration: none; font-weight: 500;
       transition: color 150ms;
     }
     .recovery-links a:hover { color: #111110; text-decoration: underline; }
 
-    /* ── Recovery Modal ───────────────────────────────── */
+    /* ── Recovery Modal ─────────────────────── */
     .overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.5);
@@ -180,7 +418,6 @@
     }
     .rec-close:hover { background: #f4f3f0; color: #111110; }
 
-    /* Tabs */
     .rec-tabs { display: flex; border-bottom: 1px solid #e8e5e0; }
     .rec-tab {
       flex: 1; padding: 11px; font-size: 13px; font-weight: 600; cursor: pointer;
@@ -191,7 +428,6 @@
     .rec-tab.active { color: #111110; border-bottom-color: #111110; }
     .rec-tab:hover:not(.active) { color: #4a4845; }
 
-    /* Steps */
     .rec-body { padding: 22px; }
     .rec-step { display: none; }
     .rec-step.active { display: block; }
@@ -212,10 +448,7 @@
     .rec-alert.success { background:#eef8f2; color:#1a6b3a; border-color:#b8e8cc; }
     .rec-alert.info    { background:#eef3fb; color:#1a4080; border-color:#bcd0f0; }
 
-    /* OTP input row */
-    .otp-wrap {
-      display: flex; gap: 8px; margin-bottom: 14px;
-    }
+    .otp-wrap { display: flex; gap: 8px; margin-bottom: 14px; }
     .otp-input {
       width: 44px; height: 48px;
       border: 1px solid #e8e5e0; border-radius: 9px;
@@ -223,37 +456,23 @@
       outline: none; background: #fff;
       transition: border-color 150ms, box-shadow 150ms;
     }
-    .otp-input:focus {
-      border-color: #111110;
-      box-shadow: 0 0 0 3px rgba(17,17,17,.08);
-    }
+    .otp-input:focus { border-color: #111110; box-shadow: 0 0 0 3px rgba(17,17,17,.08); }
 
-    .otp-meta {
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 12px; color: #8a8784; margin-bottom: 16px;
-    }
+    .otp-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #8a8784; margin-bottom: 16px; }
     .resend-btn {
       background: none; border: none; font-size: 12px; font-weight: 600;
-      cursor: pointer; color: #111110; padding: 0;
-      text-decoration: underline;
+      cursor: pointer; color: #111110; padding: 0; text-decoration: underline;
       transition: opacity 150ms;
     }
     .resend-btn:disabled { opacity: .4; cursor: not-allowed; text-decoration: none; }
 
-    /* Result card (username reveal) */
-    .result-card {
-      background: #f9f8f6; border: 1px solid #e8e5e0; border-radius: 11px;
-      padding: 16px 18px; margin-top: 4px;
-    }
+    .result-card { background: #f9f8f6; border: 1px solid #e8e5e0; border-radius: 11px; padding: 16px 18px; margin-top: 4px; }
     .result-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
     .result-row:not(:last-child) { border-bottom: 1px solid #e8e5e0; }
     .result-key { font-size: 11.5px; font-weight: 600; color: #8a8784; text-transform: uppercase; letter-spacing: .04em; }
     .result-val { font-size: 14px; font-weight: 700; color: #111110; font-family: monospace; }
 
-    .rec-footer {
-      padding: 0 22px 22px;
-      display: flex; justify-content: flex-end; gap: 8px;
-    }
+    .rec-footer { padding: 0 22px 22px; display: flex; justify-content: flex-end; gap: 8px; }
     .rec-btn {
       padding: 9px 18px; border-radius: 9px; font-size: 13.5px; font-weight: 600;
       cursor: pointer; border: 1px solid transparent;
@@ -276,39 +495,254 @@
 </head>
 <body>
 
-  <!-- ═══════════════ LEFT BRANDING PANEL ═══════════════ -->
+  <!-- ════════════════════ LEFT HERO PANEL ════════════════════ -->
   <div class="auth-left">
-    <div class="brand-mark">
-      <div class="brand-icon"><i data-lucide="shield-alert"></i></div>
-      <span class="brand-name">Disaster Relief Platform</span>
+
+    <!-- SVG Map Layer -->
+    <div class="map-canvas">
+      <svg class="map-svg" viewBox="0 0 560 780" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Latitude grid lines -->
+        <line class="grid-line" x1="0" y1="130" x2="560" y2="130"/>
+        <line class="grid-line" x1="0" y1="218" x2="560" y2="218"/>
+        <line class="grid-line" x1="0" y1="306" x2="560" y2="306"/>
+        <line class="grid-line" x1="0" y1="394" x2="560" y2="394"/>
+        <line class="grid-line" x1="0" y1="482" x2="560" y2="482"/>
+        <line class="grid-line" x1="0" y1="570" x2="560" y2="570"/>
+        <line class="grid-line" x1="0" y1="658" x2="560" y2="658"/>
+
+        <!-- Longitude grid lines -->
+        <line class="grid-line" x1="70"  y1="0" x2="70"  y2="780"/>
+        <line class="grid-line" x1="160" y1="0" x2="160" y2="780"/>
+        <line class="grid-line" x1="250" y1="0" x2="250" y2="780"/>
+        <line class="grid-line" x1="340" y1="0" x2="340" y2="780"/>
+        <line class="grid-line" x1="430" y1="0" x2="430" y2="780"/>
+        <line class="grid-line" x1="520" y1="0" x2="520" y2="780"/>
+
+        <!-- India simplified outline (rough polygon for visual atmosphere) -->
+        <path class="coast-path" d="
+          M 150,110
+          L 210,85  L 290,80  L 360,90  L 420,105
+          L 450,140 L 460,190 L 468,240 L 462,280
+          L 440,310 L 448,340 L 440,370 L 420,400
+          L 390,430 L 360,460 L 330,490 L 310,530
+          L 290,570 L 275,610 L 270,650 L 280,680
+          L 270,700 L 255,690 L 240,660 L 230,620
+          L 215,580 L 195,540 L 170,500 L 150,460
+          L 125,420 L 110,380 L 105,330 L 108,280
+          L 115,230 L 120,180 L 130,140
+          Z
+        " />
+
+        <!-- Sri Lanka (tiny ellipse) -->
+        <ellipse cx="285" cy="720" rx="16" ry="24"
+          fill="rgba(99,162,255,.03)" stroke="rgba(99,162,255,.12)" stroke-width="1"/>
+
+        <!-- Radar circle (centered on India) -->
+        <circle cx="290" cy="390" r="200"
+          fill="none" stroke="rgba(99,162,255,.04)" stroke-width="1"/>
+        <circle cx="290" cy="390" r="130"
+          fill="none" stroke="rgba(99,162,255,.06)" stroke-width="1"/>
+        <circle cx="290" cy="390" r="60"
+          fill="none" stroke="rgba(99,162,255,.08)" stroke-width="1"/>
+
+        <!-- Radar sweep line -->
+        <g class="radar-sweep" style="transform-box:fill-box; transform-origin:290px 390px;">
+          <line x1="290" y1="390" x2="490" y2="390"
+            stroke="url(#radarGrad)" stroke-width="1.5" opacity=".6"/>
+          <defs>
+            <linearGradient id="radarGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#3b82f6" stop-opacity=".8"/>
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </g>
+
+        <!-- Connection lines between incident nodes -->
+        <!-- Mumbai <-> Chennai -->
+        <line class="node-connector" x1="175" y1="470" x2="265" y2="590"/>
+        <!-- Mumbai <-> Delhi -->
+        <line class="node-connector" x1="175" y1="470" x2="210" y2="250" stroke-dashoffset="0"/>
+        <!-- Chennai <-> Guwahati -->
+        <line class="node-connector" x1="265" y1="590" x2="420" y2="280"/>
+        <!-- Delhi <-> Kolkata -->
+        <line class="node-connector" x1="210" y1="250" x2="370" y2="340"/>
+
+        <!-- ══ INCIDENT NODE: Mumbai (CRITICAL — Flood) ══ -->
+        <g class="incident-node">
+          <!-- Pulse rings -->
+          <circle class="node-ring-1" cx="175" cy="470" stroke="#ef4444" opacity=".5"/>
+          <circle class="node-ring-2" cx="175" cy="470" stroke="#ef4444" opacity=".3"/>
+          <!-- Core -->
+          <circle class="node-core" cx="175" cy="470" r="5" fill="#ef4444"/>
+          <!-- Label card -->
+          <rect x="185" y="456" width="108" height="30" rx="5"
+            fill="rgba(13,17,23,.85)" stroke="rgba(239,68,68,.35)" stroke-width="1"/>
+          <text x="191" y="467" fill="rgba(255,255,255,.85)" font-size="8" font-weight="700" font-family="Inter,sans-serif">MUMBAI FLOOD</text>
+          <text x="191" y="479" fill="rgba(239,68,68,.9)" font-size="7.5" font-family="Inter,sans-serif">CRITICAL · ACTIVE</text>
+        </g>
+
+        <!-- ══ INCIDENT NODE: Chennai (CRITICAL — Cyclone) ══ -->
+        <g class="incident-node">
+          <circle class="node-ring-1" cx="265" cy="590" stroke="#f59e0b" opacity=".5"
+            style="animation-delay:.6s"/>
+          <circle class="node-ring-2" cx="265" cy="590" stroke="#f59e0b" opacity=".3"
+            style="animation-delay:1.4s"/>
+          <circle class="node-core" cx="265" cy="590" r="5" fill="#f59e0b"
+            style="animation-delay:.3s"/>
+          <rect x="275" y="576" width="112" height="30" rx="5"
+            fill="rgba(13,17,23,.85)" stroke="rgba(245,158,11,.35)" stroke-width="1"/>
+          <text x="281" y="587" fill="rgba(255,255,255,.85)" font-size="8" font-weight="700" font-family="Inter,sans-serif">CHENNAI CYCLONE</text>
+          <text x="281" y="599" fill="rgba(245,158,11,.9)" font-size="7.5" font-family="Inter,sans-serif">CRITICAL · ACTIVE</text>
+        </g>
+
+        <!-- ══ INCIDENT NODE: Guwahati / Dibrugarh (HIGH — Flood) ══ -->
+        <g class="incident-node">
+          <circle class="node-ring-1" cx="420" cy="280" stroke="#3b82f6" opacity=".5"
+            style="animation-delay:1.2s"/>
+          <circle class="node-ring-2" cx="420" cy="280" stroke="#3b82f6" opacity=".3"
+            style="animation-delay:2.0s"/>
+          <circle class="node-core" cx="420" cy="280" r="5" fill="#3b82f6"
+            style="animation-delay:.6s"/>
+          <rect x="430" y="266" width="110" height="30" rx="5"
+            fill="rgba(13,17,23,.85)" stroke="rgba(59,130,246,.35)" stroke-width="1"/>
+          <text x="436" y="277" fill="rgba(255,255,255,.85)" font-size="8" font-weight="700" font-family="Inter,sans-serif">DIBRUGARH BREACH</text>
+          <text x="436" y="289" fill="rgba(59,130,246,.9)" font-size="7.5" font-family="Inter,sans-serif">HIGH · ACTIVE</text>
+        </g>
+
+        <!-- ══ INCIDENT NODE: Kolkata (HIGH — Flood) ══ -->
+        <g class="incident-node">
+          <circle class="node-ring-1" cx="370" cy="340" stroke="#10b981" opacity=".5"
+            style="animation-delay:1.8s"/>
+          <circle class="node-ring-2" cx="370" cy="340" stroke="#10b981" opacity=".3"
+            style="animation-delay:2.6s"/>
+          <circle class="node-core" cx="370" cy="340" r="4.5" fill="#10b981"
+            style="animation-delay:.9s"/>
+          <rect x="380" y="328" width="102" height="28" rx="5"
+            fill="rgba(13,17,23,.85)" stroke="rgba(16,185,129,.35)" stroke-width="1"/>
+          <text x="386" y="338" fill="rgba(255,255,255,.85)" font-size="7.5" font-weight="700" font-family="Inter,sans-serif">KOLKATA ALERT</text>
+          <text x="386" y="349" fill="rgba(16,185,129,.9)" font-size="7" font-family="Inter,sans-serif">HIGH · MONITORING</text>
+        </g>
+
+        <!-- ══ INCIDENT NODE: Delhi (CONTAINED) ══ -->
+        <g class="incident-node">
+          <circle cx="210" cy="250" r="3.5" fill="rgba(156,163,175,.6)"/>
+          <rect x="218" y="240" width="96" height="26" rx="4"
+            fill="rgba(13,17,23,.8)" stroke="rgba(156,163,175,.25)" stroke-width="1"/>
+          <text x="224" y="249" fill="rgba(255,255,255,.6)" font-size="7.5" font-weight="700" font-family="Inter,sans-serif">DELHI SPILL</text>
+          <text x="224" y="260" fill="rgba(156,163,175,.7)" font-size="7" font-family="Inter,sans-serif">CONTAINED</text>
+        </g>
+
+        <!-- Coord labels (lat/lng text) -->
+        <text x="14" y="137" fill="rgba(255,255,255,.12)" font-size="8" font-family="monospace">30°N</text>
+        <text x="14" y="225" fill="rgba(255,255,255,.12)" font-size="8" font-family="monospace">25°N</text>
+        <text x="14" y="313" fill="rgba(255,255,255,.12)" font-size="8" font-family="monospace">20°N</text>
+        <text x="14" y="401" fill="rgba(255,255,255,.12)" font-size="8" font-family="monospace">15°N</text>
+        <text x="14" y="489" fill="rgba(255,255,255,.12)" font-size="8" font-family="monospace">10°N</text>
+      </svg>
     </div>
 
-    <div class="auth-left-body">
-      <h2>Coordinate relief.<br>Save lives.</h2>
-      <p>A unified command center for disaster response teams — manage incidents, volunteers, inventory, and donations from one place.</p>
+    <!-- Floating particles -->
+    <div style="position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden">
+      <div style="position:absolute;width:2px;height:2px;background:rgba(99,162,255,.35);border-radius:50%;top:18%;left:28%;animation:float-a 8s ease-in-out infinite"></div>
+      <div style="position:absolute;width:2px;height:2px;background:rgba(99,162,255,.25);border-radius:50%;top:42%;left:68%;animation:float-a 11s ease-in-out 2s infinite"></div>
+      <div style="position:absolute;width:1.5px;height:1.5px;background:rgba(239,68,68,.35);border-radius:50%;top:65%;left:18%;animation:float-a 9s ease-in-out 4s infinite"></div>
+      <div style="position:absolute;width:2px;height:2px;background:rgba(245,158,11,.3);border-radius:50%;top:78%;left:55%;animation:float-a 13s ease-in-out 1s infinite"></div>
+      <div style="position:absolute;width:1.5px;height:1.5px;background:rgba(16,185,129,.35);border-radius:50%;top:30%;left:82%;animation:float-a 10s ease-in-out 6s infinite"></div>
+    </div>
 
-      <div class="auth-stats">
-        <div>
-          <div class="auth-stat-val">24/7</div>
-          <div class="auth-stat-lbl">Monitoring</div>
+    <style>
+      @keyframes float-a {
+        0%,100% { transform: translate(0,0); opacity:.6; }
+        33%      { transform: translate(8px,-10px); opacity:1; }
+        66%      { transform: translate(-6px,6px); opacity:.4; }
+      }
+    </style>
+
+    <!-- ── Inner content ─────────────────────── -->
+    <div class="auth-left-inner">
+
+      <!-- Brand -->
+      <div class="brand-mark">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 8v4m0 4h.01" stroke-width="2.5"/>
+          </svg>
         </div>
-        <div>
-          <div class="auth-stat-val">Real-time</div>
-          <div class="auth-stat-lbl">Coordination</div>
+        <span class="brand-name">Disaster Relief Platform</span>
+      </div>
+
+      <!-- Headline + description -->
+      <div class="hero-body">
+        <h2>
+          Coordinate relief.
+          <span>Save lives.</span>
+        </h2>
+        <p>
+          A unified command center for multi-agency disaster response — manage incidents,
+          dispatch volunteers, track inventory, and coordinate relief operations in real time.
+        </p>
+
+        <!-- Status chips -->
+        <div class="status-row">
+          <div class="status-chip active">
+            <div class="chip-dot"></div>
+            4 Active Incidents
+          </div>
+          <div class="status-chip warning">
+            <div class="chip-dot"></div>
+            3 Critical Zones
+          </div>
+          <div class="status-chip info">
+            <div class="chip-dot"></div>
+            12 Teams Deployed
+          </div>
         </div>
-        <div>
-          <div class="auth-stat-val">Multi-role</div>
-          <div class="auth-stat-lbl">Access control</div>
+
+        <!-- Stats -->
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-val">24/7</div>
+            <div class="stat-lbl">Monitoring</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">Real-time</div>
+            <div class="stat-lbl">Coordination</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">Multi-role</div>
+            <div class="stat-lbl">Access Control</div>
+          </div>
+        </div>
+
+        <!-- Scrolling incident ticker -->
+        <div class="ticker-wrap">
+          <span class="ticker-label">LIVE</span>
+          <div class="ticker-track">
+            <div class="ticker-inner">
+              <span>Mumbai Flood Response — 3,200 Evacuated</span>
+              <span>Chennai Cyclone Surge — 5,100 Sheltered</span>
+              <span>Dibrugarh Breach — NDRF Boats Active</span>
+              <span>Kolkata Riverbank — Mandatory Evacuation Issued</span>
+              <span>Rajasthan Drought — Emergency Tankers Deployed</span>
+              <span>Mumbai Flood Response — 3,200 Evacuated</span>
+              <span>Chennai Cyclone Surge — 5,100 Sheltered</span>
+              <span>Dibrugarh Breach — NDRF Boats Active</span>
+              <span>Kolkata Riverbank — Mandatory Evacuation Issued</span>
+              <span>Rajasthan Drought — Emergency Tankers Deployed</span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="auth-left-footer">
-      Secure · Role-based · Built for emergency operations
+      <div class="auth-left-footer">
+        Secure &nbsp;·&nbsp; Role-based &nbsp;·&nbsp; Built for emergency operations
+      </div>
     </div>
   </div>
 
-  <!-- ═══════════════ RIGHT FORM PANEL ═══════════════ -->
+  <!-- ════════════════════ RIGHT FORM PANEL ════════════════════ -->
   <div class="auth-right">
     <div class="auth-form-wrap">
 
@@ -345,7 +779,7 @@
     </div>
   </div>
 
-  <!-- ═══════════════ RECOVERY MODAL ═══════════════ -->
+  <!-- ════════════════════ RECOVERY MODAL ════════════════════ -->
   <div class="overlay" id="overlay">
     <div class="rec-modal">
 
@@ -359,10 +793,9 @@
         <button class="rec-tab"        data-tab="un">Forgot Username</button>
       </div>
 
-      <!-- ── Forgot Password ────────────────────────── -->
+      <!-- ── Forgot Password ───────────────────────── -->
       <div class="rec-body" id="body-pw">
 
-        <!-- Step 1: phone -->
         <div class="rec-step active" id="pw-s1">
           <div class="rec-hint">Enter the phone number registered with your account to receive a one-time verification code.</div>
           <div class="rec-alert" id="pw-s1-alert"></div>
@@ -376,7 +809,6 @@
           </div>
         </div>
 
-        <!-- Step 2: verify OTP + new password -->
         <div class="rec-step" id="pw-s2">
           <div class="rec-hint">A 6-digit code was sent to your mobile. Enter it below along with your new password.</div>
           <div class="rec-alert" id="pw-s2-alert"></div>
@@ -397,16 +829,15 @@
             <input class="form-control" id="pw-confirm" type="password" placeholder="Repeat new password">
           </div>
           <div class="rec-footer">
-            <button class="rec-btn rec-btn-cancel" id="pw-back">← Back</button>
+            <button class="rec-btn rec-btn-cancel" id="pw-back">Back</button>
             <button class="rec-btn rec-btn-primary" id="pw-reset-btn">Reset Password</button>
           </div>
         </div>
 
-        <!-- Step 3: success -->
         <div class="rec-step" id="pw-s3">
           <div style="text-align:center; padding: 12px 0 20px;">
             <div style="font-size:44px; margin-bottom:14px;"><i data-lucide="check-circle-2"></i></div>
-            <h3 style="font-size:17px; font-weight:700; color:#111110; margin-bottom:8px;">Password Reset!</h3>
+            <h3 style="font-size:17px; font-weight:700; color:#111110; margin-bottom:8px;">Password Reset</h3>
             <p style="font-size:13.5px; color:#8a8784; line-height:1.6;">Your password has been changed successfully.<br>You can now sign in with your new password.</p>
           </div>
           <div class="rec-footer">
@@ -414,12 +845,11 @@
           </div>
         </div>
 
-      </div><!-- /body-pw -->
+      </div>
 
-      <!-- ── Forgot Username ─────────────────────────── -->
+      <!-- ── Forgot Username ───────────────────────── -->
       <div class="rec-body" id="body-un" style="display:none">
 
-        <!-- Step 1: phone -->
         <div class="rec-step active" id="un-s1">
           <div class="rec-hint">Enter the phone number linked to your account. After verification we'll show your username.</div>
           <div class="rec-alert" id="un-s1-alert"></div>
@@ -433,7 +863,6 @@
           </div>
         </div>
 
-        <!-- Step 2: verify OTP -->
         <div class="rec-step" id="un-s2">
           <div class="rec-hint">Enter the 6-digit code sent to your mobile number.</div>
           <div class="rec-alert" id="un-s2-alert"></div>
@@ -446,12 +875,11 @@
             </div>
           </div>
           <div class="rec-footer">
-            <button class="rec-btn rec-btn-cancel" id="un-back">← Back</button>
+            <button class="rec-btn rec-btn-cancel" id="un-back">Back</button>
             <button class="rec-btn rec-btn-primary" id="un-verify-btn">Verify OTP</button>
           </div>
         </div>
 
-        <!-- Step 3: result -->
         <div class="rec-step" id="un-s3">
           <p style="font-size:13.5px; color:#4a4845; margin-bottom:14px; line-height:1.6;">
             Identity verified — here are your account details:
@@ -462,68 +890,51 @@
           </div>
         </div>
 
-      </div><!-- /body-un -->
+      </div>
 
-    </div><!-- /rec-modal -->
-  </div><!-- /overlay -->
+    </div>
+  </div>
 
   <script type="module" src="js/auth.js"></script>
 
   <script type="module">
     const API = 'http://localhost:8080/api';
 
-    // ── Shared state ──────────────────────────────────────────────
-    let activeTab    = 'pw';
-    let pwPhone      = '';
-    let unPhone      = '';
-    let pwTimerInt   = null;
-    let unTimerInt   = null;
+    let activeTab  = 'pw';
+    let pwPhone    = '';
+    let unPhone    = '';
+    let pwTimerInt = null;
+    let unTimerInt = null;
 
-    // ── Overlay open / close ──────────────────────────────────────
     const overlay = document.getElementById('overlay');
 
-    window.openOverlay = function(tab) {
-      switchTab(tab);
-      overlay.classList.add('open');
-    };
-    window.closeOverlay = function() {
-      overlay.classList.remove('open');
-      setTimeout(resetAll, 250);
-    };
+    window.openOverlay = function(tab) { switchTab(tab); overlay.classList.add('open'); };
+    window.closeOverlay = function() { overlay.classList.remove('open'); setTimeout(resetAll, 250); };
 
     overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
-
     document.getElementById('rec-close').onclick = closeOverlay;
 
-    document.getElementById('link-forgot-pw').addEventListener('click', e => {
-      e.preventDefault(); openOverlay('pw');
-    });
-    document.getElementById('link-forgot-un').addEventListener('click', e => {
-      e.preventDefault(); openOverlay('un');
-    });
+    document.getElementById('link-forgot-pw').addEventListener('click', e => { e.preventDefault(); openOverlay('pw'); });
+    document.getElementById('link-forgot-un').addEventListener('click', e => { e.preventDefault(); openOverlay('un'); });
 
-    // ── Tabs ──────────────────────────────────────────────────────
     document.querySelectorAll('.rec-tab').forEach(t =>
       t.addEventListener('click', () => switchTab(t.dataset.tab)));
 
     function switchTab(tab) {
       activeTab = tab;
-      document.querySelectorAll('.rec-tab').forEach(t =>
-        t.classList.toggle('active', t.dataset.tab === tab));
+      document.querySelectorAll('.rec-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
       document.getElementById('body-pw').style.display = tab === 'pw' ? '' : 'none';
       document.getElementById('body-un').style.display = tab === 'un' ? '' : 'none';
       clearAlerts();
     }
 
-    // ── OTP input boxes ───────────────────────────────────────────
     function buildOtpBoxes(wrapId) {
       const wrap = document.getElementById(wrapId);
       wrap.innerHTML = '';
       for (let i = 0; i < 6; i++) {
         const inp = document.createElement('input');
-        inp.className = 'otp-input';
-        inp.type = 'text'; inp.maxLength = 1;
+        inp.className = 'otp-input'; inp.type = 'text'; inp.maxLength = 1;
         inp.inputMode = 'numeric'; inp.pattern = '[0-9]';
         inp.addEventListener('input', e => {
           e.target.value = e.target.value.replace(/\D/, '');
@@ -536,20 +947,16 @@
         inp.addEventListener('paste', e => {
           e.preventDefault();
           const digits = (e.clipboardData.getData('text') || '').replace(/\D/g,'').slice(0,6);
-          [...wrap.querySelectorAll('.otp-input')].forEach((b,i) => {
-            b.value = digits[i] || '';
-          });
+          [...wrap.querySelectorAll('.otp-input')].forEach((b,i) => { b.value = digits[i] || ''; });
         });
         wrap.appendChild(inp);
       }
     }
 
     function getOtp(wrapId) {
-      return [...document.getElementById(wrapId).querySelectorAll('.otp-input')]
-        .map(i => i.value).join('');
+      return [...document.getElementById(wrapId).querySelectorAll('.otp-input')].map(i => i.value).join('');
     }
 
-    // ── Countdown timer ───────────────────────────────────────────
     function startTimer(displayId, resendId, seconds, onExpire) {
       clearInterval(activeTab === 'pw' ? pwTimerInt : unTimerInt);
       const display = document.getElementById(displayId);
@@ -576,15 +983,12 @@
       return interval;
     }
 
-    // ── Helpers ───────────────────────────────────────────────────
     function showAlert(id, type, msg) {
       const el = document.getElementById(id);
       el.textContent = msg; el.className = `rec-alert show ${type}`;
     }
     function clearAlerts() {
-      document.querySelectorAll('.rec-alert').forEach(el => {
-        el.className = 'rec-alert'; el.textContent = '';
-      });
+      document.querySelectorAll('.rec-alert').forEach(el => { el.className = 'rec-alert'; el.textContent = ''; });
     }
     function setStep(prefix, step) {
       const body = document.getElementById(prefix === 'pw' ? 'body-pw' : 'body-un');
@@ -599,8 +1003,7 @@
 
     async function postJson(path, body) {
       const res  = await fetch(`${API}${path}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
@@ -609,7 +1012,6 @@
     }
 
     function resetAll() {
-      // Reset pw flow
       setStep('pw', 1);
       document.getElementById('pw-phone').value = '';
       document.getElementById('pw-new').value   = '';
@@ -618,7 +1020,6 @@
       document.getElementById('pw-timer').textContent = '';
       document.getElementById('pw-resend').disabled = true;
 
-      // Reset un flow
       setStep('un', 1);
       document.getElementById('un-phone').value = '';
       document.getElementById('un-result').innerHTML = '';
@@ -629,20 +1030,15 @@
       clearAlerts();
     }
 
-    // ── FORGOT PASSWORD ───────────────────────────────────────────
-
     async function pwSendOtp() {
       pwPhone = document.getElementById('pw-phone').value.trim();
-      if (!isValidPhone(pwPhone))
-        return showAlert('pw-s1-alert','error','Enter a valid 10-digit mobile number.');
-
+      if (!isValidPhone(pwPhone)) return showAlert('pw-s1-alert','error','Enter a valid 10-digit mobile number.');
       setBtn('pw-send-btn', true, 'Sending…');
       try {
         const data = await postJson('/auth/send-otp', { phone: pwPhone });
         buildOtpBoxes('pw-otp-wrap');
         setStep('pw', 2);
         startTimer('pw-timer', 'pw-resend', 300);
-        // DEV: show OTP in alert so testers can copy it
         if (data.devOtp) showAlert('pw-s2-alert','info',`[Dev] Your OTP is: ${data.devOtp}`);
       } catch (err) {
         showAlert('pw-s1-alert','error', err.message);
@@ -652,20 +1048,16 @@
     }
 
     async function pwReset() {
-      const otp     = getOtp('pw-otp-wrap');
-      const newPw   = document.getElementById('pw-new').value;
+      const otp = getOtp('pw-otp-wrap');
+      const newPw = document.getElementById('pw-new').value;
       const confirm = document.getElementById('pw-confirm').value;
-
-      if (otp.length !== 6)   return showAlert('pw-s2-alert','error','Enter the complete 6-digit OTP.');
-      if (!newPw)              return showAlert('pw-s2-alert','error','Please enter a new password.');
-      if (newPw.length < 8)   return showAlert('pw-s2-alert','error','Password must be at least 8 characters.');
-      if (newPw !== confirm)   return showAlert('pw-s2-alert','error','Passwords do not match.');
-
+      if (otp.length !== 6)  return showAlert('pw-s2-alert','error','Enter the complete 6-digit OTP.');
+      if (!newPw)            return showAlert('pw-s2-alert','error','Please enter a new password.');
+      if (newPw.length < 8)  return showAlert('pw-s2-alert','error','Password must be at least 8 characters.');
+      if (newPw !== confirm)  return showAlert('pw-s2-alert','error','Passwords do not match.');
       setBtn('pw-reset-btn', true, 'Resetting…');
       try {
-        await postJson('/auth/reset-password', {
-          phone: pwPhone, otp, newPassword: newPw, confirmPassword: confirm
-        });
+        await postJson('/auth/reset-password', { phone: pwPhone, otp, newPassword: newPw, confirmPassword: confirm });
         clearInterval(pwTimerInt);
         setStep('pw', 3);
       } catch (err) {
@@ -678,17 +1070,11 @@
     document.getElementById('pw-send-btn').onclick  = pwSendOtp;
     document.getElementById('pw-reset-btn').onclick = pwReset;
     document.getElementById('pw-back').onclick      = () => { clearInterval(pwTimerInt); setStep('pw',1); clearAlerts(); };
-    document.getElementById('pw-resend').onclick    = () => {
-      clearAlerts(); pwSendOtp();
-    };
-
-    // ── FORGOT USERNAME ───────────────────────────────────────────
+    document.getElementById('pw-resend').onclick    = () => { clearAlerts(); pwSendOtp(); };
 
     async function unSendOtp() {
       unPhone = document.getElementById('un-phone').value.trim();
-      if (!isValidPhone(unPhone))
-        return showAlert('un-s1-alert','error','Enter a valid 10-digit mobile number.');
-
+      if (!isValidPhone(unPhone)) return showAlert('un-s1-alert','error','Enter a valid 10-digit mobile number.');
       setBtn('un-send-btn', true, 'Sending…');
       try {
         const data = await postJson('/auth/send-otp', { phone: unPhone });
@@ -706,7 +1092,6 @@
     async function unVerify() {
       const otp = getOtp('un-otp-wrap');
       if (otp.length !== 6) return showAlert('un-s2-alert','error','Enter the complete 6-digit OTP.');
-
       setBtn('un-verify-btn', true, 'Verifying…');
       try {
         const data = await postJson('/auth/forgot-username', { phone: unPhone, otp });

@@ -26,7 +26,7 @@ export function getPrimaryRole() {
 
 export function defaultDashboardPath() {
   const role = getPrimaryRole();
-  if (role === 'ROLE_ADMIN' || role === 'ROLE_SUPER_ADMIN') return '/admin-dashboard.html';
+  if (['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_NGO_COORDINATOR'].includes(role)) return '/admin-dashboard.html';
   return '/dashboard.html';
 }
 

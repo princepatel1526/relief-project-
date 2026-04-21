@@ -106,12 +106,16 @@
 
   <script type="module">
     import api from './js/api.js';
-    import { requireAuth, renderUserInfo, logout as authLogout } from './js/auth.js';
+    import { requireAuth, renderUserInfo, logout as authLogout, hasRole } from './js/auth.js';
     import { showToast, statusBadge, buildPagination } from './js/utils.js';
     import './js/profile.js';
 
     window.logout = authLogout;
     requireAuth();
+    // Volunteers page only accessible to operational roles
+    if (!(hasRole('ADMIN') || hasRole('SUPER_ADMIN') || hasRole('NGO_COORDINATOR') || hasRole('RESPONDER'))) {
+      window.location.href = '/dashboard.html';
+    }
     renderUserInfo();
 
     let currentPage = 0;

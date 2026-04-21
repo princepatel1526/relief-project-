@@ -114,6 +114,13 @@
     window.logout = authLogout;
     if (isLoggedIn()) renderUserInfo();
 
+    // Update dashboard link to role-appropriate page
+    const dashLink = document.querySelector('a[href="admin-dashboard.html"]');
+    if (dashLink && isLoggedIn()) {
+      const isAdmin = hasRole('ADMIN') || hasRole('SUPER_ADMIN') || hasRole('NGO_COORDINATOR');
+      if (!isAdmin) dashLink.href = 'dashboard.html';
+    }
+
     const privileged = hasRole('ADMIN') || hasRole('SUPER_ADMIN') || hasRole('NGO_COORDINATOR');
     if (privileged) document.getElementById('publish-btn').style.display = 'inline-flex';
     if (!isLoggedIn()) {

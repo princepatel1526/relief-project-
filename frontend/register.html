@@ -226,12 +226,10 @@
         <div class="form-group" style="margin-top:13px">
           <label class="form-label">Role</label>
           <select class="form-control" name="role" id="role-select">
-            <option value="CITIZEN">Citizen — Report incidents & request help</option>
-            <option value="VOLUNTEER">Volunteer — Field relief worker</option>
-            <option value="RESPONDER">Responder — Professional first responder</option>
-            <option value="NGO_COORDINATOR">NGO Coordinator — Partner organisation</option>
-            <option value="ADMIN">Admin — Manage operations</option>
-            <option value="SUPER_ADMIN">Super Admin — Global administration</option>
+            <option value="CITIZEN">Citizen — Report incidents and request relief support</option>
+            <option value="VOLUNTEER">Volunteer — Field relief worker and community support</option>
+            <option value="RESPONDER">Responder — Professional first responder or rescue officer</option>
+            <option value="NGO_COORDINATOR">NGO Coordinator — Partner organisation coordinator</option>
           </select>
           <div class="role-hint" id="role-hint">Volunteers assist directly in field operations and disaster zones.</div>
         </div>
@@ -249,12 +247,10 @@
   <script>
     // Role hints
     const hints = {
-      CITIZEN:     'Citizens can report incidents, request help, and track response progress.',
-      VOLUNTEER:   'Volunteers assist directly in field operations and disaster zones.',
-      RESPONDER:   'Professional first responders with specialised emergency training.',
-      NGO_COORDINATOR: 'NGO coordinators manage partner organisation relief operations.',
-      ADMIN:       'Admins manage teams, assignments, and operational workflows.',
-      SUPER_ADMIN: 'Super admins manage global platform policies and access.',
+      CITIZEN:         'Citizens can report incidents, request help, and track relief response progress.',
+      VOLUNTEER:       'Volunteers assist directly in field operations, shelters, and disaster zones.',
+      RESPONDER:       'Professional first responders with specialised emergency training and certifications.',
+      NGO_COORDINATOR: 'NGO coordinators manage partner organisation relief operations and resources.',
     };
     document.getElementById('role-select').addEventListener('change', function() {
       document.getElementById('role-hint').textContent = hints[this.value] || '';
