@@ -23,31 +23,24 @@ public class AdminUserInitializer {
     @Bean
     public CommandLineRunner seedAdminUser() {
         return args -> {
+            // Only seed once — never overwrite an existing admin account
+            if (userRepository.existsByUsername("admin")) return;
+
             Role adminRole = roleRepository.findByName(Role.RoleName.ROLE_ADMIN)
                     .orElseGet(() -> roleRepository.save(Role.builder()
                             .name(Role.RoleName.ROLE_ADMIN)
                             .description("System Administrator")
                             .build()));
 
-            String encoded = passwordEncoder.encode("password");
-            userRepository.findByEmail("admin@example.com").ifPresentOrElse(admin -> {
-                admin.setUsername("admin");
-                admin.setFullName("System Administrator");
-                admin.setIsActive(true);
-                admin.setPassword(encoded);
-                admin.setRoles(Set.of(adminRole));
-                userRepository.save(admin);
-            }, () -> {
-                User admin = User.builder()
-                        .username("admin")
-                        .email("admin@example.com")
-                        .password(encoded)
-                        .fullName("System Administrator")
-                        .isActive(true)
-                        .roles(Set.of(adminRole))
-                        .build();
-                userRepository.save(admin);
-            });
+            User admin = User.builder()
+                    .username("admin")
+                    .email("admin@example.com")
+                    .password(passwordEncoder.encode("Admin@2024"))
+                    .fullName("System Administrator")
+                    .isActive(true)
+                    .roles(Set.of(adminRole))
+                    .build();
+            userRepository.save(admin);
         };
     }
 }

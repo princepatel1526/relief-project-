@@ -59,6 +59,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/disasters/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/disaster-types/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/news", "/api/news/**").permitAll()
+                .requestMatchers(HttpMethod.POST,   "/api/news/**")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "NGO_COORDINATOR")
+                .requestMatchers(HttpMethod.PUT,    "/api/news/**")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "NGO_COORDINATOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/news/**")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/actuator/health", "/actuator/health").permitAll()
 
                 // ── Current-user profile (any authenticated role) ─────────────
@@ -69,9 +75,11 @@ public class SecurityConfig {
                     .hasAnyRole("ADMIN", "SUPER_ADMIN", "NGO_COORDINATOR")
                 .requestMatchers("/api/admin/**")
                     .hasAnyRole("ADMIN", "SUPER_ADMIN", "NGO_COORDINATOR")
-                // Citizens can submit relief requests and view disasters
+                // Citizens can submit relief requests; responders/volunteers can update status
                 .requestMatchers(HttpMethod.POST, "/api/requests")
                     .hasAnyRole("ADMIN", "SUPER_ADMIN", "VOLUNTEER", "CITIZEN", "RESPONDER", "NGO_COORDINATOR")
+                .requestMatchers(HttpMethod.PATCH, "/api/requests/**")
+                    .hasAnyRole("ADMIN", "SUPER_ADMIN", "VOLUNTEER", "RESPONDER", "NGO_COORDINATOR")
                 // Volunteers, responders, admins, and NGO coordinators can report/update disasters
                 .requestMatchers(HttpMethod.POST,   "/api/disasters/**")
                     .hasAnyRole("ADMIN", "SUPER_ADMIN", "VOLUNTEER", "RESPONDER", "NGO_COORDINATOR")
