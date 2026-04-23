@@ -131,12 +131,19 @@
 
     let state = { filter: 'ACTIVE_FIRST', q: '', region: '', page: 0 };
 
+    // const filterToParams = () => {
+    //   if (state.filter === 'CRITICAL') return { severity: 'CRITICAL', sort: 'CRITICAL_FIRST' };
+    //   if (state.filter === 'LATEST') return { sort: 'LATEST' };
+    //   if (state.filter === 'ACTIVE_FIRST') return { status: 'ACTIVE', sort: 'ACTIVE_FIRST' };
+    //   if (['Flood', 'Fire', 'Landslide', 'Medical'].includes(state.filter)) return { disasterType: state.filter, sort: 'LATEST' };
+    //   return { sort: 'LATEST' };
+    // };
     const filterToParams = () => {
-      if (state.filter === 'CRITICAL') return { severity: 'CRITICAL', sort: 'CRITICAL_FIRST' };
-      if (state.filter === 'LATEST') return { sort: 'LATEST' };
-      if (state.filter === 'ACTIVE_FIRST') return { status: 'ACTIVE', sort: 'ACTIVE_FIRST' };
-      if (['Flood', 'Fire', 'Landslide', 'Medical'].includes(state.filter)) return { disasterType: state.filter, sort: 'LATEST' };
-      return { sort: 'LATEST' };
+      if (state.filter === 'CRITICAL') return { severity: 'CRITICAL', viewSort: 'CRITICAL_FIRST' };
+      if (state.filter === 'LATEST') return { viewSort: 'LATEST' };
+      if (state.filter === 'ACTIVE_FIRST') return { status: 'ACTIVE', viewSort: 'ACTIVE_FIRST' };
+      if (['Flood', 'Fire', 'Landslide', 'Medical'].includes(state.filter)) return { disasterType: state.filter, viewSort: 'LATEST' };
+      return { viewSort: 'LATEST' };
     };
 
     async function loadNews(page = 0) {

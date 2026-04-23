@@ -39,10 +39,10 @@ public class NewsServiceImpl {
                                          Disaster.Severity severity,
                                          String disasterType,
                                          String region,
-                                         String sort,
+                                         String viewSort,
                                          String query,
                                          Pageable pageable) {
-        syncFromDisasters();
+        //syncFromDisasters();
 
         Page<NewsUpdate> page;
         if (query != null && !query.isBlank()) {
@@ -60,9 +60,9 @@ public class NewsServiceImpl {
         }
 
         List<NewsUpdate> ordered = new ArrayList<>(page.getContent());
-        if ("ACTIVE_FIRST".equalsIgnoreCase(sort)) {
+        if ("ACTIVE_FIRST".equalsIgnoreCase(viewSort)) {
             ordered.sort((a, b) -> Boolean.compare(a.getStatus() != NewsUpdate.NewsStatus.ACTIVE, b.getStatus() != NewsUpdate.NewsStatus.ACTIVE));
-        } else if ("CRITICAL_FIRST".equalsIgnoreCase(sort)) {
+        } else if ("CRITICAL_FIRST".equalsIgnoreCase(viewSort)) {
             ordered.sort((a, b) -> severityRank(a.getSeverity()) - severityRank(b.getSeverity()));
         } else {
             ordered.sort(Comparator.comparing(NewsUpdate::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
@@ -73,7 +73,7 @@ public class NewsServiceImpl {
 
     @Transactional(readOnly = true)
     public NewsUpdateResponse getById(Long id) {
-        syncFromDisasters();
+        //syncFromDisasters();
         NewsUpdate news = newsUpdateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("News", "id", id));
         return toResponse(news);
